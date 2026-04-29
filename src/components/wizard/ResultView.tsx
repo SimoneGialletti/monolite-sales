@@ -1,11 +1,13 @@
 import { useState } from "react";
 import {
+  AGENT_COST_RATIO,
   CalcInputs,
   compute,
   estimateMonthlyCostReduction,
   estimateMonthlyUplift,
   fmtEur,
   resolvePlan,
+  SavingLine,
   UPLIFT_RATE,
 } from "@/lib/calc";
 
@@ -107,35 +109,36 @@ export const ResultView = ({ inputs, outputs }: ResultViewProps) => {
               +{fmtEur(savings.total)}
             </p>
             <p className="mt-2 text-[12px] text-[var(--fg3)]">
-              Bloccato dal giorno in cui passi a Monolite.
+              Per ogni attività, l'agent costa il {Math.round((1 - AGENT_COST_RATIO) * 100)}% in meno
+              dell'equivalente umano — ed è più veloce e più preciso.
             </p>
 
             <ul className="mt-5 space-y-3 text-[13px] text-[var(--fg1)]">
               <Benefit
                 title="Prima nota e contabilità"
-                detail="Gli agenti assorbono ~70% delle ore che oggi spendi su data entry."
-                amount={savings.accountingHoursSaved}
+                detail="L'agent fa data entry e quadrature a metà del costo, in tempo reale, senza errori di trascrizione."
+                line={savings.accounting}
               />
               <Benefit
                 title="ERP/gestionale legacy"
-                detail="Sostituisci canoni e licenze del software che usi oggi."
-                amount={savings.erpReplaced}
+                detail="Stesse funzioni del software che usi oggi, a metà del canone — più aggiornamenti continui."
+                line={savings.erp}
               />
               <Benefit
                 title="Fornitori e listini"
-                detail="Listini sempre aggiornati, niente più chase manuale via email."
-                amount={savings.supplierOpsSaved}
+                detail="L'agent aggiorna listini e tiene la relazione fornitori a metà costo, più veloce delle email."
+                line={savings.suppliers}
               />
               <Benefit
                 title="Gestione commesse"
-                detail="Avanzamento, costi e marginalità tracciati senza spreadsheet."
-                amount={savings.commesseOpsSaved}
+                detail="Avanzamento, costi e marginalità tracciati a metà costo, in tempo reale, senza spreadsheet."
+                line={savings.commesse}
               />
               {inputs.includeStudio && (
                 <Benefit
                   title="Tempo dello studio commercialista"
-                  detail="Lo studio accede direttamente al DB in clean data room."
-                  amount={savings.studioHoursSaved}
+                  detail="Lo studio accede al DB in clean data room: stesso lavoro a metà delle ore fatturate."
+                  line={savings.studio}
                 />
               )}
             </ul>
@@ -507,30 +510,40 @@ const CostFooter = ({
 interface BenefitProps {
   title: string;
   detail: string;
-  amount?: number;
+  /** Voce di saving (umano vs agent). Se presente e con saving > 0, mostra
+   *  l'importo a destra e la riga "umano X → agent X/2" sotto. */
+  line?: SavingLine;
 }
 
-const Benefit = ({ title, detail, amount }: BenefitProps) => (
-  <li className="flex items-start gap-3">
-    <span
-      aria-hidden
-      className="mt-[8px] h-px w-3 shrink-0 bg-[color:var(--fg-muted)]"
-    />
-    <div className="min-w-0 flex-1">
-      <div className="flex items-baseline justify-between gap-3">
-        <p className="text-[var(--fg1)] leading-snug">{title}</p>
-        {amount !== undefined && amount > 0 && (
-          <p className="font-mono tabular text-[12px] text-[var(--fg2)] shrink-0">
-            {fmtEur(amount)}
+const Benefit = ({ title, detail, line }: BenefitProps) => {
+  const showLine = line !== undefined && line.saving > 0;
+  return (
+    <li className="flex items-start gap-3">
+      <span
+        aria-hidden
+        className="mt-[8px] h-px w-3 shrink-0 bg-[color:var(--fg-muted)]"
+      />
+      <div className="min-w-0 flex-1">
+        <div className="flex items-baseline justify-between gap-3">
+          <p className="text-[var(--fg1)] leading-snug">{title}</p>
+          {showLine && (
+            <p className="font-mono tabular text-[12px] text-[var(--fg2)] shrink-0">
+              {fmtEur(line.saving)}
+            </p>
+          )}
+        </div>
+        <p className="text-[12px] text-[var(--fg3)] mt-0.5 leading-snug">
+          {detail}
+        </p>
+        {showLine && (
+          <p className="mt-1 font-mono tabular text-[10px] text-[var(--fg-muted)] tracking-wide">
+            umano {fmtEur(line.humanCost)} → agent {fmtEur(line.agentCost)}
           </p>
         )}
       </div>
-      <p className="text-[12px] text-[var(--fg3)] mt-0.5 leading-snug">
-        {detail}
-      </p>
-    </div>
-  </li>
-);
+    </li>
+  );
+};
 
 interface PriceLineProps {
   label: string;

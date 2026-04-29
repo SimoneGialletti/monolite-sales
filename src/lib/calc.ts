@@ -400,21 +400,45 @@ export function estimateMonthlyUplift(inp: CalcInputs): number {
 }
 
 // ---------------------------------------------------------------------------
-// Modello di costo evitato — quello che Monolite sostituisce o rende meno caro
-// per la PMI. Serve a rendere esplicita la value proposition nel result.
+// Modello di costo evitato — paradigma Monolite:
+//
+//   Per ogni attività X che oggi un essere umano (o un software legacy) fa
+//   per la PMI, l'agent equivalente costa il 50% in meno, ed è anche più
+//   veloce e più preciso. Velocità e precisione sono benefici aggiuntivi
+//   inclusi nel pitch ma non monetizzati direttamente — il valore monetario
+//   per la PMI è il 50% del costo attuale (cost_human − cost_agent).
+//
+// Da questa regola si derivano tutte le voci di "saving garantito" qui sotto.
 // ---------------------------------------------------------------------------
 
+/** Frazione del costo umano che un agent Monolite costa per la stessa
+ *  attività. Cardine del modello commerciale: cambiarlo cambia tutti i
+ *  saving e va deciso di prodotto, non a runtime. */
+export const AGENT_COST_RATIO = 0.5;
+
+/** Voce di saving — sempre espressa come differenza tra costo umano
+ *  attuale e costo dell'agent equivalente. */
+export interface SavingLine {
+  /** Quanto la PMI spende oggi per questa attività (umano o software). */
+  humanCost: number;
+  /** Quanto costerà fare la stessa attività con l'agent (= 0.5 × humanCost). */
+  agentCost: number;
+  /** Risparmio mensile = humanCost − agentCost. */
+  saving: number;
+}
+
 export interface CostReductionBreakdown {
-  /** Ore di prima nota / data entry contabile assorbite dagli agenti. */
-  accountingHoursSaved: number;
-  /** ERP / gestionale legacy che la PMI può dismettere. */
-  erpReplaced: number;
-  /** Ore di gestione fornitori e listini risparmiate. */
-  supplierOpsSaved: number;
-  /** Ore di gestione commesse risparmiate (project ops, scheduling). */
-  commesseOpsSaved: number;
-  /** Ore dello studio commercialista risparmiate dall'accesso diretto al DB. */
-  studioHoursSaved: number;
+  /** Prima nota / data entry contabile. */
+  accounting: SavingLine;
+  /** ERP / gestionale legacy sostituito da Monolite. */
+  erp: SavingLine;
+  /** Gestione fornitori e listini. */
+  suppliers: SavingLine;
+  /** Gestione commesse (project ops, scheduling, marginalità). */
+  commesse: SavingLine;
+  /** Tempo dello studio commercialista grazie alla clean data room. */
+  studio: SavingLine;
+  /** Risparmio totale mensile (somma dei .saving). */
   total: number;
 }
 
@@ -422,39 +446,42 @@ export interface CostReductionBreakdown {
 export const SUPPLIER_OPS_HOURS_PER_SUPPLIER = 0.4;
 /** Ore mensili tipiche per gestione commessa attiva. */
 export const COMMESSA_OPS_HOURS_PER_PROJECT = 4;
-/** Ore mensili dello studio risparmiate dalla clean data room (per piano). */
-const STUDIO_HOURS_SAVED_BY_PLAN: Record<Plan, number> = {
+/** Ore mensili che lo studio dedica alla PMI, per piano. */
+const STUDIO_HOURS_BY_PLAN: Record<Plan, number> = {
   starter: 2,
   business: 6,
   enterprise: 14,
   studio: 0, // gli studi non risparmiano se stessi
 };
 
+function lineFromHumanCost(humanCost: number): SavingLine {
+  const agentCost = humanCost * AGENT_COST_RATIO;
+  return { humanCost, agentCost, saving: humanCost - agentCost };
+}
+
 export function estimateMonthlyCostReduction(inp: CalcInputs): CostReductionBreakdown {
   const plan = resolvePlan(inp);
-  const accountingHoursSaved = inp.monthlyAccountingHours * inp.avgHourlyRate * 0.7;
-  const erpReplaced = inp.currentErpMonthlyCost;
-  const supplierOpsSaved = inp.suppliersCount * SUPPLIER_OPS_HOURS_PER_SUPPLIER * inp.avgHourlyRate;
-  const commesseOpsSaved = inp.monthlyCommesse * COMMESSA_OPS_HOURS_PER_PROJECT * inp.avgHourlyRate;
-  const studioHoursSaved = inp.includeStudio
-    ? (STUDIO_HOURS_SAVED_BY_PLAN[plan] ?? 0) * inp.avgHourlyRate
-    : 0;
+
+  const accounting = lineFromHumanCost(inp.monthlyAccountingHours * inp.avgHourlyRate);
+  const erp = lineFromHumanCost(inp.currentErpMonthlyCost);
+  const suppliers = lineFromHumanCost(
+    inp.suppliersCount * SUPPLIER_OPS_HOURS_PER_SUPPLIER * inp.avgHourlyRate
+  );
+  const commesse = lineFromHumanCost(
+    inp.monthlyCommesse * COMMESSA_OPS_HOURS_PER_PROJECT * inp.avgHourlyRate
+  );
+  const studio = lineFromHumanCost(
+    inp.includeStudio ? (STUDIO_HOURS_BY_PLAN[plan] ?? 0) * inp.avgHourlyRate : 0
+  );
 
   const total =
-    accountingHoursSaved +
-    erpReplaced +
-    supplierOpsSaved +
-    commesseOpsSaved +
-    studioHoursSaved;
+    accounting.saving +
+    erp.saving +
+    suppliers.saving +
+    commesse.saving +
+    studio.saving;
 
-  return {
-    accountingHoursSaved,
-    erpReplaced,
-    supplierOpsSaved,
-    commesseOpsSaved,
-    studioHoursSaved,
-    total,
-  };
+  return { accounting, erp, suppliers, commesse, studio, total };
 }
 
 /**
