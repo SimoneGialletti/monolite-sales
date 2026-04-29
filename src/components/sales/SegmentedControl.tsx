@@ -11,16 +11,15 @@ interface SegmentedControlProps<T extends string | number> {
   options: SegmentOption<T>[];
   value: T;
   onChange: (v: T) => void;
-  /** Layout — "row" is the dense Index-style pill bar; "block" stacks the segments */
+  /** Layout — "row" è il pill bar denso; "block" stacca i segmenti in griglia */
   layout?: "row" | "block";
-  /** Renders an optional helper string under the label */
+  /** Stringa di aiuto opzionale sotto la label */
   hint?: ReactNode;
 }
 
 /**
- * Editorial segmented pill bar — the calculator's mode / plan / contract
- * switchers stack three of these at the top of /sales, mirroring the
- * Index Ventures Option Plan tool's `mode=seed | series-a | series-b`.
+ * Segmented control editoriale. Il selettore mode/plan/contract a inizio
+ * /sales impila tre di questi.
  */
 export function SegmentedControl<T extends string | number>({
   label,
@@ -47,8 +46,8 @@ export function SegmentedControl<T extends string | number>({
         aria-label={label}
         className={
           layout === "row"
-            ? "inline-flex items-stretch p-1 rounded-full border border-[color:var(--border-subtle)] bg-[color:var(--bg-sunken)] w-fit max-w-full"
-            : "grid grid-cols-3 gap-1 p-1 rounded-md border border-[color:var(--border-subtle)] bg-[color:var(--bg-sunken)]"
+            ? "inline-flex items-stretch p-1 border border-[color:var(--border-subtle)] bg-[color:var(--bg-sunken)] w-fit max-w-full"
+            : "grid grid-cols-3 gap-1 p-1 border border-[color:var(--border-subtle)] bg-[color:var(--bg-sunken)]"
         }
       >
         {options.map((o) => {
@@ -62,10 +61,10 @@ export function SegmentedControl<T extends string | number>({
               className={
                 "relative inline-flex flex-col items-center justify-center transition-all duration-150 cursor-pointer " +
                 (layout === "row"
-                  ? "px-4 py-1.5 rounded-full text-[13px] font-medium "
-                  : "px-3 py-2 rounded-sm text-[13px] font-medium ") +
+                  ? "px-4 py-1.5 text-[13px] font-medium "
+                  : "px-3 py-2 text-[13px] font-medium ") +
                 (active
-                  ? "bg-[color:var(--meus-orange)] text-white shadow-sm"
+                  ? "bg-[color:var(--fg1)] text-[var(--bg-page)]"
                   : "text-[var(--fg2)] hover:text-[var(--fg1)] hover:bg-[color:var(--bg-hover)]")
               }
             >
@@ -75,7 +74,7 @@ export function SegmentedControl<T extends string | number>({
                   className={
                     "mt-0.5 text-[10px] font-mono uppercase tracking-wider " +
                     (active
-                      ? "text-white/75"
+                      ? "text-[var(--bg-page)] opacity-75"
                       : "text-[var(--fg-muted)]")
                   }
                 >

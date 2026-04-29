@@ -1,14 +1,11 @@
 import { useState } from "react";
 import {
-  AD_WASTE_REDUCTION_RATE,
-  advFeeRate,
-  breakEvenAttributedSales,
   CalcInputs,
   compute,
-  cpsRate,
   estimateMonthlyCostReduction,
   estimateMonthlyUplift,
   fmtEur,
+  resolvePlan,
   UPLIFT_RATE,
 } from "@/lib/calc";
 
@@ -17,43 +14,41 @@ interface ResultViewProps {
   outputs: ReturnType<typeof compute>;
 }
 
+/**
+ * Risultato del wizard PMI — "ti costa X, ti torna Y" in tre carte:
+ *
+ *   1. Il pitch — riga editoriale, una frase.
+ *   2. Cosa ottieni — risparmio garantito + crescita potenziale + barra net.
+ *   3. Perché costa così — voci di prezzo riconciliate con il modello.
+ *
+ * Numero a sinistra, cifra a destra. Bordi, non ombre. Reckless sui numeri.
+ */
 export const ResultView = ({ inputs, outputs }: ResultViewProps) => {
   const uplift = estimateMonthlyUplift(inputs);
   const savings = estimateMonthlyCostReduction(inputs);
-  const cost = outputs.monthlyRevenue;
-
   const upside = uplift + savings.total;
-  const fixedCost = outputs.monthlyCanone + outputs.monthlyDcr;
 
-  // Product rule: MEUS never claims more than 30% of the Potential
-  // value. Below that ceiling we show the actual variable fees;
-  // above it we cap the displayed cost so the bar always tells the
-  // story 'most of the upside stays with you'.
+  const fixedCost = outputs.monthlyCanone + outputs.monthlyStudioFee;
+  const variableCost = outputs.monthlyTokenRevenue + outputs.monthlyMarketplaceFee;
+
+  // Regola di prodotto: Monolite non si prende mai più del 30% del valore
+  // potenziale che genera. Sopra quella soglia tagliamo i fee variabili.
   const POTENTIAL_TAKE_RATE_CAP = 0.3;
-  const variableFees = outputs.monthlyAdvFee + outputs.monthlySalesFee;
-  const potentialMeusCost = Math.min(
-    variableFees,
-    uplift * POTENTIAL_TAKE_RATE_CAP
-  );
+  const cappedVariable = Math.min(variableCost, uplift * POTENTIAL_TAKE_RATE_CAP);
+  const capApplied = variableCost > uplift * POTENTIAL_TAKE_RATE_CAP;
 
-  // Recompute net using the capped potential cost so the bars and
-  // the headline number tell the same story.
-  const netValue = uplift + savings.total - fixedCost - potentialMeusCost;
+  const netValue = uplift + savings.total - fixedCost - cappedVariable;
   const netPositive = netValue >= 0;
+  const displayedTotalCost = fixedCost + cappedVariable;
 
-  // Whether the cap actually clipped the variable fees — drives the
-  // explanatory note in the 'Why it costs that' card so list numbers
-  // and capped numbers don't seem to disagree.
-  const capApplied = variableFees > uplift * POTENTIAL_TAKE_RATE_CAP;
-  const displayedTotalCost = fixedCost + potentialMeusCost;
-
+  const plan = resolvePlan(inputs);
   const [openCard, setOpenCard] = useState<"pitch" | "get" | "why">("pitch");
 
   return (
     <div className="space-y-3">
       <Card
         id="pitch"
-        eyebrow="The pitch"
+        eyebrow="Il pitch"
         eyebrowColor="var(--fg3)"
         summary={
           <span className="text-[12px] font-mono tabular text-[var(--fg3)]">
@@ -64,33 +59,34 @@ export const ResultView = ({ inputs, outputs }: ResultViewProps) => {
         onToggle={() => setOpenCard("pitch")}
       >
         <p className="text-[var(--fg2)] text-[18px] md:text-[22px] leading-snug max-w-3xl">
-          With just{" "}
-          <span className="font-display font-medium text-[var(--fg1)] tabular">
+          Con{" "}
+          <span className="font-display font-normal text-[var(--fg1)] tabular">
             {fmtEur(fixedCost)}
-          </span>{" "}
-          / month you could unlock{" "}
+          </span>
+          /mese sblocchi{" "}
           <span
-            className="font-display font-medium tabular"
-            style={{ color: "var(--meus-green)" }}
+            className="font-display font-normal tabular"
+            style={{ color: "var(--positive)" }}
           >
             +{fmtEur(upside)}
-          </span>{" "}
-          / month in growth and savings.
+          </span>
+          /mese tra risparmio sull'attuale gestione e crescita potenziale.
         </p>
         <p className="mt-4 text-[12px] text-[var(--fg-muted)] leading-relaxed max-w-2xl">
-          Subscription{outputs.monthlyDcr > 0 ? " + CRM data hygiene" : ""}.
-          Advertising and sales fees scale only when MEUS delivers results.
+          Il canone Monolite{outputs.monthlyStudioFee > 0 ? " + accesso dello studio in clean data room" : ""}.
+          I costi variabili — token agenti e marketplace di terzi — scalano solo
+          quando gli agenti lavorano davvero per te.
         </p>
       </Card>
 
       <Card
         id="get"
-        eyebrow="01 · What you get"
-        eyebrowColor="var(--meus-green)"
+        eyebrow="01 · Cosa ottieni"
+        eyebrowColor="var(--positive)"
         summary={
           <span
-            className="text-[14px] font-display font-medium tabular"
-            style={{ color: "var(--meus-green)" }}
+            className="text-[14px] font-display font-normal tabular"
+            style={{ color: "var(--positive)" }}
           >
             +{fmtEur(upside)}
           </span>
@@ -99,112 +95,110 @@ export const ResultView = ({ inputs, outputs }: ResultViewProps) => {
         onToggle={() => setOpenCard("get")}
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Guaranteed sub-card */}
-          <SubCard color="var(--meus-gold)" tint="var(--meus-gold-soft)">
-            <p className="eyebrow" style={{ color: "var(--meus-gold)" }}>
-              Guaranteed
+          {/* Risparmio garantito */}
+          <SubCard color="var(--mono-sand)" tint="var(--mono-accent-soft)">
+            <p className="eyebrow" style={{ color: "var(--mono-sand)" }}>
+              Risparmio garantito
             </p>
             <p
               className="number leading-none text-[40px] md:text-[56px] mt-3"
-              style={{ color: "var(--meus-gold)" }}
+              style={{ color: "var(--mono-sand)" }}
             >
               +{fmtEur(savings.total)}
             </p>
             <p className="mt-2 text-[12px] text-[var(--fg3)]">
-              Locked in the day you switch.
+              Bloccato dal giorno in cui passi a Monolite.
             </p>
 
             <ul className="mt-5 space-y-3 text-[13px] text-[var(--fg1)]">
               <Benefit
-                title="One platform replaces your stack"
-                detail="CDP, audience builder, lookalike, push provider, dedup — all gone."
-                amount={savings.toolConsolidation}
+                title="Prima nota e contabilità"
+                detail="Gli agenti assorbono ~70% delle ore che oggi spendi su data entry."
+                amount={savings.accountingHoursSaved}
               />
               <Benefit
-                title="AI fan support, 24/7"
-                detail="Replaces customer-care headcount and CS SaaS — instant answers, every fan."
-                amount={savings.fanSupportAutomation}
+                title="ERP/gestionale legacy"
+                detail="Sostituisci canoni e licenze del software che usi oggi."
+                amount={savings.erpReplaced}
               />
               <Benefit
-                title="Segments built in seconds, not days"
-                detail="No more manual list pulls or data-team handoffs."
-                amount={savings.segmentOpsSaved}
+                title="Fornitori e listini"
+                detail="Listini sempre aggiornati, niente più chase manuale via email."
+                amount={savings.supplierOpsSaved}
               />
               <Benefit
-                title="CRM cleaned automatically"
-                detail="Continuous dedup, validation, enrichment."
-                amount={savings.opsTimeSaved}
+                title="Gestione commesse"
+                detail="Avanzamento, costi e marginalità tracciati senza spreadsheet."
+                amount={savings.commesseOpsSaved}
               />
-              <Benefit
-                title="Sharper targeting cuts ad waste"
-                detail={`~${Math.round(
-                  AD_WASTE_REDUCTION_RATE * 100
-                )}% less broad-audience spend.`}
-                amount={savings.adWasteReduction}
-              />
+              {inputs.includeStudio && (
+                <Benefit
+                  title="Tempo dello studio commercialista"
+                  detail="Lo studio accede direttamente al DB in clean data room."
+                  amount={savings.studioHoursSaved}
+                />
+              )}
             </ul>
 
             <CostFooter
-              label="Subscription"
+              label="Canone Monolite"
               detail={
-                outputs.monthlyDcr > 0
-                  ? "Flat monthly fee + CRM hygiene"
-                  : "Flat monthly fee"
+                outputs.monthlyStudioFee > 0
+                  ? "Canone fisso + accesso studio"
+                  : "Canone fisso mensile"
               }
               amount={fixedCost}
               valueAmount={savings.total}
-              accent="var(--meus-gold)"
+              accent="var(--mono-sand)"
             />
           </SubCard>
 
-          {/* Potential sub-card */}
-          <SubCard color="var(--meus-green)" tint="var(--meus-green-soft)">
-            <p className="eyebrow" style={{ color: "var(--meus-green)" }}>
-              Potential
+          {/* Crescita potenziale */}
+          <SubCard color="var(--positive)" tint="var(--positive-soft)">
+            <p className="eyebrow" style={{ color: "var(--positive)" }}>
+              Crescita potenziale
             </p>
             <p
               className="number leading-none text-[40px] md:text-[56px] mt-3"
-              style={{ color: "var(--meus-green)" }}
+              style={{ color: "var(--positive)" }}
             >
               +{fmtEur(uplift)}
             </p>
             <p className="mt-2 text-[12px] text-[var(--fg3)]">
-              Modeled on a {Math.round(UPLIFT_RATE * 100)}% uplift rate.
+              Modellato come {Math.round(UPLIFT_RATE * 100)}% di leva sul fatturato annuo, distribuita su 12 mesi.
             </p>
 
             <ul className="mt-5 space-y-3 text-[13px] text-[var(--fg1)]">
               <Benefit
-                title="Behavioral segments convert harder"
-                detail="Slice fans by spend, geography, artist affinity, recency. Targeted creatives lift CTR and ROAS."
+                title="Ore liberate, riallocate al business"
+                detail="Le persone fanno commerciale, prodotto, qualità — non più data entry."
               />
               <Benefit
-                title="Outer Reach finds net-new buyers"
-                detail="Lookalike expansion beyond your owned fanbase, modeled on your best segments."
+                title="Decisioni più rapide"
+                detail="Contabilità industriale chiusa in tempo reale: marginalità per commessa visibile sempre."
               />
               <Benefit
-                title="Same segment, every channel"
-                detail="Meta, TikTok, Spotify, push, email, SMS — synced and tracked from one place."
+                title="Marketplace di agenti specialistici"
+                detail="Sviluppatori e studi pubblicano agenti per settore: scegli quelli che ti servono."
               />
             </ul>
 
             <CostFooter
-              label={`${pct(advFeeRate(inputs.mode))} on ad spend + ${pct(
-                cpsRate(inputs.mode)
-              )} on attributed sales`}
-              detail="Pay-for-performance — only when MEUS delivers"
-              amount={potentialMeusCost}
+              label="Token e marketplace"
+              detail="Pay-per-use — paghi solo quando gli agenti lavorano"
+              amount={cappedVariable}
               valueAmount={uplift}
-              accent="var(--meus-green)"
+              accent="var(--positive)"
             />
           </SubCard>
         </div>
 
         <div className="mt-10">
-          <p className="eyebrow text-[10px]">Net / month</p>
+          <p className="eyebrow text-[10px]">Netto al mese</p>
           <p
-            className={`number leading-none text-[40px] md:text-[56px] mt-2 ${
+            className={`number leading-none text-[40px] md:text-[56px] mt-2 tabular ${
               netPositive
-                ? "text-[color:var(--meus-green)]"
+                ? "text-[color:var(--positive)]"
                 : "text-[color:var(--danger)]"
             }`}
           >
@@ -214,17 +208,17 @@ export const ResultView = ({ inputs, outputs }: ResultViewProps) => {
 
           <div className="mt-6 space-y-4">
             <ValueVsCostBar
-              label="Potential"
+              label="Crescita potenziale"
               valueAmount={uplift}
-              costAmount={potentialMeusCost}
-              accent="var(--meus-green)"
+              costAmount={cappedVariable}
+              accent="var(--positive)"
               scale={Math.max(uplift, savings.total, 1)}
             />
             <ValueVsCostBar
-              label="Guaranteed"
+              label="Risparmio garantito"
               valueAmount={savings.total}
               costAmount={fixedCost}
-              accent="var(--meus-gold)"
+              accent="var(--mono-sand)"
               scale={Math.max(uplift, savings.total, 1)}
             />
           </div>
@@ -235,10 +229,10 @@ export const ResultView = ({ inputs, outputs }: ResultViewProps) => {
 
       <Card
         id="why"
-        eyebrow="02 · Why it costs that"
+        eyebrow="02 · Perché costa così"
         eyebrowColor="var(--fg3)"
         summary={
-          <span className="text-[14px] font-display font-medium tabular text-[var(--fg1)]">
+          <span className="text-[14px] font-display font-normal tabular text-[var(--fg1)]">
             {fmtEur(displayedTotalCost)}
           </span>
         }
@@ -247,49 +241,46 @@ export const ResultView = ({ inputs, outputs }: ResultViewProps) => {
       >
         <div className="divide-y divide-[color:var(--border-subtle)]">
           <PriceLine
-            label="Subscription"
+            label="Canone Monolite"
             amount={outputs.monthlyCanone}
-            formula={`${planLabel(inputs.plan)} plan`}
+            formula={`Piano ${planLabel(plan)}`}
           />
-          <PriceLine
-            label="Advertising fee"
-            amount={
-              capApplied && variableFees > 0
-                ? potentialMeusCost *
-                  (outputs.monthlyAdvFee / variableFees)
-                : outputs.monthlyAdvFee
-            }
-            formula={`${pct(advFeeRate(inputs.mode))} × ${fmtEur(
-              inputs.advBudget
-            )} ad spend`}
-          />
-          <PriceLine
-            label="Sales fee"
-            amount={
-              capApplied && variableFees > 0
-                ? potentialMeusCost *
-                  (outputs.monthlySalesFee / variableFees)
-                : outputs.monthlySalesFee
-            }
-            formula={salesFeeFormula(inputs)}
-          />
-          {outputs.monthlyDcr > 0 && (
+          {outputs.monthlyStudioFee > 0 && (
             <PriceLine
-              label="CRM data hygiene"
-              amount={outputs.monthlyDcr}
-              formula={`${fmtNumberCompact(inputs.crmContacts)} contacts`}
+              label="Accesso studio (clean data room)"
+              amount={outputs.monthlyStudioFee}
+              formula="Add-on per condividere il DB con il commercialista"
             />
           )}
+          <PriceLine
+            label="Token agenti (extra rispetto agli inclusi)"
+            amount={
+              capApplied && variableCost > 0
+                ? cappedVariable * (outputs.monthlyTokenRevenue / variableCost)
+                : outputs.monthlyTokenRevenue
+            }
+            formula={`Consumo stimato ${fmtNumberCompact(
+              outputs.monthlyTokensConsumed
+            )} token, ${fmtNumberCompact(outputs.monthlyTokensIncluded)} inclusi nel piano`}
+          />
+          <PriceLine
+            label="Marketplace agenti di terzi"
+            amount={
+              capApplied && variableCost > 0
+                ? cappedVariable * (outputs.monthlyMarketplaceFee / variableCost)
+                : outputs.monthlyMarketplaceFee
+            }
+            formula={`5% sui ricavi degli agenti pubblicati da sviluppatori esterni · quota terzi ${inputs.thirdPartyAgentShare}%`}
+          />
         </div>
 
         {capApplied && (
           <p className="mt-5 text-[12px] text-[var(--fg3)] leading-relaxed max-w-2xl">
-            <span style={{ color: "var(--meus-orange)" }}>The 20% cap.</span>{" "}
-            Advertising and sales fees here are pro-rated to the cap:
-            MEUS never takes more than{" "}
-            {Math.round(POTENTIAL_TAKE_RATE_CAP * 100)}% of the
-            Potential value MEUS generates. Above that ceiling, fees
-            are waived.
+            <span style={{ color: "var(--mono-spice)" }}>Il tetto del 30%.</span>{" "}
+            I costi variabili sopra sono pro-rata fino al cap: Monolite non
+            trattiene mai più del{" "}
+            {Math.round(POTENTIAL_TAKE_RATE_CAP * 100)}% del valore potenziale che
+            ti genera. Oltre quella soglia, i costi variabili sono azzerati.
           </p>
         )}
       </Card>
@@ -319,14 +310,11 @@ const Card = ({
   children,
 }: CardProps) => (
   <div
-    className={`rounded-[14px] border transition-all duration-300 ease-out ${
+    className={`border transition-colors duration-300 ${
       open
-        ? "border-[color:var(--border-strong)] bg-[color:var(--bg-surface)] shadow-[0_24px_60px_-20px_rgba(0,0,0,0.6)]"
+        ? "border-[color:var(--border-strong)] bg-[color:var(--bg-surface)]"
         : "border-[color:var(--border-subtle)] bg-[color:var(--bg-sunken)] hover:border-[color:var(--border-default)]"
     }`}
-    style={{
-      transform: open ? "translateY(0)" : "translateY(0)",
-    }}
   >
     <button
       type="button"
@@ -360,23 +348,19 @@ const Card = ({
 // ─────────────────────────── Helpers ───────────────────────────
 
 const planLabel = (plan: CalcInputs["plan"]) =>
-  plan === "enterprise" ? "Enterprise" : plan === "pro" ? "Pro" : "Starter";
-
-const pct = (rate: number) => `${(rate * 100).toFixed(0)}%`;
+  plan === "enterprise"
+    ? "Enterprise"
+    : plan === "business"
+      ? "Business"
+      : plan === "studio"
+        ? "Studio"
+        : "Starter";
 
 const fmtNumberCompact = (n: number) =>
   new Intl.NumberFormat("it-IT", {
     maximumFractionDigits: 0,
     useGrouping: "always",
   }).format(n);
-
-const salesFeeFormula = (inp: CalcInputs): string => {
-  const cpsAttributed = (inp.attributedSales * inp.pctAttributed) / 100;
-  const cps = `${pct(cpsRate(inp.mode))} × ${fmtEur(cpsAttributed)} attributed`;
-  if (inp.pctAttributed >= 100) return cps;
-  const clicks = Math.round(inp.clicks * (1 - inp.pctAttributed / 100));
-  return `${cps} + per-click on ${fmtNumberCompact(clicks)} unattributed`;
-};
 
 interface ValueVsCostBarProps {
   label: string;
@@ -387,10 +371,10 @@ interface ValueVsCostBarProps {
 }
 
 /**
- * Renders a single horizontal bar where the full bar = the value MEUS unlocks
- * for that leg, and a darker overlay segment shows what MEUS charges. The
- * net (value − cost) is what's left in the accent color. Both bars share the
- * same scale so visual lengths are comparable across Potential/Guaranteed.
+ * Una barra orizzontale dove la lunghezza piena = valore generato; un
+ * overlay più scuro = quota che Monolite trattiene. Il netto resta nel
+ * colore d'accento. Stessa scala tra le due barre, così le lunghezze
+ * sono confrontabili.
  */
 const ValueVsCostBar = ({
   label,
@@ -410,7 +394,7 @@ const ValueVsCostBar = ({
         <div className="flex items-center gap-2 min-w-0">
           <span
             aria-hidden
-            className="h-2 w-2 rounded-full shrink-0"
+            className="h-2 w-2 shrink-0"
             style={{ background: accent }}
           />
           <span className="text-[var(--fg3)]">{label}</span>
@@ -420,19 +404,19 @@ const ValueVsCostBar = ({
         </div>
         <span
           className="font-mono tabular shrink-0 flex items-center gap-1.5"
-          style={{ color: "var(--meus-orange)" }}
+          style={{ color: "var(--mono-spice)" }}
         >
           <span
             aria-hidden
-            className="h-2 w-2 rounded-full"
-            style={{ background: "var(--meus-orange)" }}
+            className="h-2 w-2"
+            style={{ background: "var(--mono-spice)" }}
           />
-          MEUS −{fmtEur(costAmount)}
+          Monolite −{fmtEur(costAmount)}
         </span>
       </div>
       <div className="h-2 w-full">
         <div
-          className="flex h-full overflow-hidden rounded-full"
+          className="flex h-full overflow-hidden"
           style={{ width: `${totalPct}%` }}
         >
           <div
@@ -446,7 +430,7 @@ const ValueVsCostBar = ({
             className="h-full shrink-0"
             style={{
               width: `${costPctOfValue}%`,
-              background: "var(--meus-orange)",
+              background: "var(--mono-spice)",
             }}
           />
         </div>
@@ -463,7 +447,7 @@ interface SubCardProps {
 
 const SubCard = ({ color, tint, children }: SubCardProps) => (
   <div
-    className="rounded-[12px] p-5 md:p-6"
+    className="p-5 md:p-6"
     style={{
       background: tint,
       border: `1px solid color-mix(in srgb, ${color} 25%, transparent)`,
@@ -497,7 +481,7 @@ const CostFooter = ({
       }}
     >
       <p className="eyebrow text-[10px] text-[var(--fg-muted)]">
-        Your MEUS cost
+        Quanto paghi a Monolite
       </p>
       <div className="mt-2 flex items-baseline justify-between gap-3">
         <p className="text-[13px] text-[var(--fg2)] leading-snug min-w-0">
@@ -513,7 +497,7 @@ const CostFooter = ({
       {ratio >= 1 && (
         <p className="mt-3 text-[11px] mono uppercase tracking-wider">
           <span style={{ color: accent }}>{ratio.toFixed(1)}×</span>
-          <span className="text-[var(--fg-muted)]"> value vs. cost</span>
+          <span className="text-[var(--fg-muted)]"> valore vs costo</span>
         </p>
       )}
     </div>
@@ -564,9 +548,9 @@ const PriceLine = ({ label, amount, formula }: PriceLineProps) => {
           <button
             type="button"
             onClick={() => setOpen((v) => !v)}
-            aria-label={`How ${label} is calculated`}
+            aria-label={`Come si calcola ${label}`}
             aria-expanded={open}
-            className="inline-flex h-[18px] w-[18px] items-center justify-center rounded-full border border-[color:var(--border-default)] text-[10px] text-[var(--fg3)] hover:border-[color:var(--meus-orange)] hover:text-[color:var(--meus-orange)] transition-colors"
+            className="inline-flex h-[18px] w-[18px] items-center justify-center rounded-full border border-[color:var(--border-default)] text-[10px] text-[var(--fg3)] hover:border-[color:var(--mono-spice)] hover:text-[color:var(--mono-spice)] transition-colors"
           >
             i
           </button>
@@ -592,38 +576,35 @@ interface DetailsRowProps {
 const DetailsRow = ({ inputs, netPositive }: DetailsRowProps) => {
   const [open, setOpen] = useState(false);
   if (!netPositive) return null;
-  const breakEven = breakEvenAttributedSales(inputs);
-  if (!isFinite(breakEven) || breakEven === 0) return null;
-  const ratio =
-    inputs.attributedSales > 0
-      ? inputs.attributedSales / breakEven
-      : 0;
+  // Mostriamo solo qualche numero di contesto: dipendenti + ore di contabilità.
   return (
     <div className="mt-6">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="text-[11px] mono uppercase tracking-wider text-[var(--fg-muted)] hover:text-[color:var(--meus-orange)] transition-colors"
+        className="text-[11px] mono uppercase tracking-wider text-[var(--fg-muted)] hover:text-[color:var(--mono-spice)] transition-colors"
       >
-        {open ? "Hide details" : "Details"}
+        {open ? "Nascondi dettagli" : "Dettagli"}
       </button>
       {open && (
         <p className="mt-3 text-[12px] text-[var(--fg3)] leading-relaxed max-w-md">
-          Break-even at{" "}
+          Modellato su{" "}
           <span className="font-mono text-[var(--fg1)] tabular">
-            {fmtEur(breakEven)}
+            {inputs.employees}
           </span>{" "}
-          / month in attributed sales.
-          {ratio >= 1 && (
-            <>
-              {" "}
-              You're at{" "}
-              <span className="font-mono text-[color:var(--meus-orange)] tabular">
-                {ratio.toFixed(1)}×
-              </span>{" "}
-              that line.
-            </>
-          )}
+          dipendenti,{" "}
+          <span className="font-mono text-[var(--fg1)] tabular">
+            {inputs.monthlyAccountingHours}h
+          </span>
+          /mese di contabilità,{" "}
+          <span className="font-mono text-[var(--fg1)] tabular">
+            {inputs.suppliersCount}
+          </span>{" "}
+          fornitori e{" "}
+          <span className="font-mono text-[var(--fg1)] tabular">
+            {inputs.monthlyCommesse}
+          </span>{" "}
+          commesse attive in media.
         </p>
       )}
     </div>

@@ -57,12 +57,13 @@ export default {
         "text-muted": "hsl(var(--text-muted))",
       },
       fontFamily: {
-        display: ["Clash Display", "Inter Tight", "system-ui", "sans-serif"],
-        body: ["Geist", "Inter", "system-ui", "-apple-system", "Segoe UI", "sans-serif"],
-        mono: ["Geist Mono", "ui-monospace", "SF Mono", "Menlo", "monospace"],
+        // Monolite — Reckless display + system sans + JetBrains Mono.
+        display: ["Reckless", "Reckless Standard", "Georgia", "Times New Roman", "serif"],
+        body: ["ui-sans-serif", "system-ui", "-apple-system", "Segoe UI", "Roboto", "Helvetica Neue", "Arial", "sans-serif"],
+        mono: ["JetBrains Mono", "ui-monospace", "SFMono-Regular", "Menlo", "Monaco", "Consolas", "monospace"],
       },
       borderRadius: {
-        // MEUS DS scale — per spec
+        // Monolite — square by default. Only chips and tiles round.
         xs: "var(--radius-xs)",
         sm: "var(--radius-sm)",
         md: "var(--radius-md)",
@@ -87,7 +88,7 @@ export default {
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        "fade-in": "fade-in 0.3s ease-out",
+        "fade-in": "fade-in 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
       },
     },
   },

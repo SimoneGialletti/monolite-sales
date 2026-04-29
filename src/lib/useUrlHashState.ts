@@ -5,31 +5,40 @@ import {
   type Mode,
   type Plan,
   type PriceTier,
+  type ClientType,
 } from "./calc";
 
 /**
- * URL hash sync for the sales calculator (Index Ventures pattern).
+ * Sincronizzazione hash → stato per il calcolatore Monolite.
  *
- * Inputs are encoded as compact key/value pairs in `window.location.hash`,
- * so reps can paste a URL into Slack and the receiver lands on the same
- * scenario. We use replaceState so the back button doesn't fill up with one
- * history entry per slider tick.
+ * Gli input vengono codificati come coppie chiave/valore compatte in
+ * `window.location.hash`, così che un commerciale Monolite possa incollare
+ * un URL in chat e l'altro lato apra esattamente lo stesso scenario.
+ * Usiamo replaceState così che il pulsante "Indietro" non si riempia di una
+ * voce per ogni movimento di slider.
  */
 
 const SHORT: Record<string, keyof CalcInputs> = {
   mode: "mode",
   plan: "plan",
+  client: "clientType",
   contract: "contractMonths",
   poc: "freePocMonths",
-  crm: "crmContacts",
-  adv: "advBudget",
-  sales: "attributedSales",
-  attrib: "pctAttributed",
-  clicks: "clicks",
+  emp: "employees",
+  rev: "annualRevenue",
+  hours: "monthlyAccountingHours",
+  sup: "suppliersCount",
+  com: "monthlyCommesse",
+  ord: "monthlyOrders",
+  erp: "currentErpMonthlyCost",
+  rate: "avgHourlyRate",
   tier: "priceTier",
+  third: "thirdPartyAgentShare",
+  studio: "includeStudio",
   margin: "grossMargin",
   payback: "paybackMonths",
   floor: "marginFloor",
+  name: "partnerName",
 };
 
 const LONG_TO_SHORT: Record<string, string> = Object.fromEntries(
@@ -39,9 +48,15 @@ const LONG_TO_SHORT: Record<string, string> = Object.fromEntries(
 const isMode = (v: string): v is Mode =>
   v === "listino" || v === "strategic";
 const isPlan = (v: string): v is Plan =>
-  v === "starter" || v === "pro" || v === "enterprise";
+  v === "starter" || v === "business" || v === "enterprise" || v === "studio";
 const isTier = (v: string): v is PriceTier =>
   v === "low" || v === "mid" || v === "high";
+const isClient = (v: string): v is ClientType =>
+  v === "pmi-small" ||
+  v === "pmi-medium" ||
+  v === "pmi-large" ||
+  v === "studio" ||
+  v === "developer";
 
 function parseHash(hash: string, base: CalcInputs): CalcInputs {
   const cleaned = hash.startsWith("#") ? hash.slice(1) : hash;
@@ -58,12 +73,15 @@ function parseHash(hash: string, base: CalcInputs): CalcInputs {
       out.plan = raw;
     } else if (longKey === "priceTier" && isTier(raw)) {
       out.priceTier = raw;
+    } else if (longKey === "clientType" && isClient(raw)) {
+      out.clientType = raw;
     } else if (longKey === "partnerName") {
       out.partnerName = raw;
+    } else if (longKey === "includeStudio") {
+      out.includeStudio = raw === "1" || raw === "true";
     } else {
       const n = Number(raw);
       if (Number.isFinite(n)) {
-        // numeric scalar — keys above are exhaustive for non-numeric ones
         (out as unknown as Record<string, number>)[longKey] = n;
       }
     }
@@ -79,9 +97,12 @@ function serializeHash(inputs: CalcInputs, base: CalcInputs): string {
   ][]) {
     const shortKey = LONG_TO_SHORT[longKey];
     if (!shortKey) continue;
-    // skip values equal to defaults, keeps the URL short
     if (val === base[longKey]) continue;
     if (typeof val === "string" && val === "") continue;
+    if (typeof val === "boolean") {
+      params.set(shortKey, val ? "1" : "0");
+      continue;
+    }
     params.set(shortKey, String(val));
   }
   const s = params.toString();
@@ -99,11 +120,8 @@ export function useUrlHashState(): [
       : parseHash(window.location.hash, defaultInputs)
   );
 
-  // Suppress write-back when WE just wrote, so the hashchange listener
-  // doesn't bounce us back to the parsed version of our own write.
   const writingRef = useRef(false);
 
-  // Apply hash → state on browser navigation (back/forward, manual edit).
   useEffect(() => {
     const onHashChange = () => {
       if (writingRef.current) {
@@ -116,7 +134,6 @@ export function useUrlHashState(): [
     return () => window.removeEventListener("hashchange", onHashChange);
   }, []);
 
-  // Apply state → hash whenever state changes.
   useEffect(() => {
     if (typeof window === "undefined") return;
     const next = serializeHash(state, defaultInputs);

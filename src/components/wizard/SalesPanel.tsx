@@ -5,13 +5,18 @@ interface SalesPanelProps {
   outputs: ReturnType<typeof compute>;
 }
 
+/**
+ * Pannello di trattativa — visibile al commerciale Monolite.
+ * I quattro numeri che contano: tetto di investimento, sconto canone,
+ * profitto annuo, LTV/CAC.
+ */
 export const SalesPanel = ({ outputs }: SalesPanelProps) => {
   const healthLabel =
     outputs.health === "ok"
-      ? "Healthy"
+      ? "Sana"
       : outputs.health === "warn"
-        ? "Watch"
-        : "Risky";
+        ? "Da osservare"
+        : "Rischiosa";
   const HealthIcon =
     outputs.health === "ok"
       ? ShieldCheck
@@ -26,9 +31,9 @@ export const SalesPanel = ({ outputs }: SalesPanelProps) => {
         : "pill-bad";
 
   return (
-    <div className="card-meus p-6 mt-6 border-[color:var(--meus-orange)]/30">
+    <div className="card-mono p-6 mt-6 border-[color:var(--mono-spice)]/30">
       <div className="flex items-center justify-between mb-5">
-        <h3 className="eyebrow eyebrow-accent">Internal — sales view</h3>
+        <h3 className="eyebrow eyebrow-accent">Interno · vista commerciale</h3>
         <span className={`pill ${healthClass}`}>
           <HealthIcon size={12} /> {healthLabel}
         </span>
@@ -36,26 +41,26 @@ export const SalesPanel = ({ outputs }: SalesPanelProps) => {
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <SalesKpi
-          label="Max upfront investment"
+          label="Tetto investimento"
           value={fmtEur(outputs.maxInvestment)}
-          sub={`${fmtPct(outputs.pctOfRevenue, 1)} of contract`}
+          sub={`${fmtPct(outputs.pctOfRevenue, 1)} del contratto`}
         />
         <SalesKpi
-          label="Max fee discount"
+          label="Sconto canone max"
           value={fmtEur(outputs.maxFeeDiscount)}
-          sub="discount headroom"
+          sub="margine residuo ≥ floor"
         />
         <SalesKpi
-          label="Annual gross profit"
+          label="Margine lordo annuo"
           value={fmtEur(outputs.annualGrossProfit)}
-          sub="at default margin"
+          sub="al margine impostato"
         />
         <SalesKpi
           label="LTV : CAC"
           value={outputs.ltvCac > 0 ? `${outputs.ltvCac.toFixed(2)}×` : "—"}
           sub={
             outputs.paybackAtMax > 0
-              ? `payback ${outputs.paybackAtMax.toFixed(1)} mo`
+              ? `payback ${outputs.paybackAtMax.toFixed(1)} mesi`
               : "payback —"
           }
         />
@@ -71,7 +76,7 @@ interface SalesKpiProps {
 }
 
 const SalesKpi = ({ label, value, sub }: SalesKpiProps) => (
-  <div className="card-meus-2 p-4">
+  <div className="card-mono-2 p-4">
     <p className="eyebrow leading-none">{label}</p>
     <p className="number text-[24px] mt-3 leading-none text-[var(--fg1)]">
       {value}

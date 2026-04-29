@@ -18,17 +18,15 @@ interface PaybackTimelineProps {
 }
 
 /**
- * Month-by-month cumulative gross profit, with the upfront investment as a
- * reference line. The crossing point is where MEUS gets paid back. Editorial
- * single-stroke chart per DS rules: one orange line, no gradient fills,
- * tabular axes.
+ * Margine lordo cumulato mese su mese, con il tetto di investimento come
+ * linea di riferimento. Il punto di intersezione è dove Monolite rientra.
+ * Linea singola in spice — nessun gradiente decorativo, assi tabular.
  */
 export const PaybackTimeline = ({ inputs, outputs }: PaybackTimelineProps) => {
   const monthlyGP = outputs.annualGrossProfit / 12;
   const data = useMemo(() => {
     const rows: { month: number; cumulative: number; investment: number }[] = [];
     for (let m = 0; m <= inputs.contractMonths; m++) {
-      // PoC months at the start are free → no gross profit accrual yet
       const active = Math.max(0, m - inputs.freePocMonths);
       rows.push({
         month: m,
@@ -53,29 +51,29 @@ export const PaybackTimeline = ({ inputs, outputs }: PaybackTimelineProps) => {
   return (
     <section>
       <div className="flex items-baseline justify-between gap-3 mb-5">
-        <p className="eyebrow eyebrow-accent">Payback timeline</p>
+        <p className="eyebrow eyebrow-accent">Linea del payback</p>
         <p className="text-[11px] text-[var(--fg-muted)] font-mono uppercase tracking-wider">
-          When MEUS gets paid back
+          Quando Monolite rientra
         </p>
       </div>
 
-      <div className="card-meus p-5">
+      <div className="card-mono p-5">
         <div className="flex items-baseline justify-between flex-wrap gap-3 mb-4">
           <div>
             <p className="text-[12px] text-[var(--fg3)]">
-              Cumulative gross profit · investment recouped at
+              Margine lordo cumulato · investimento ripagato a
             </p>
             <p className="number text-[28px] text-[var(--fg1)] mt-1">
               {paybackMonth !== null && paybackMonth <= inputs.contractMonths
-                ? `month ${paybackMonth.toFixed(1)}`
-                : "— (not within contract)"}
+                ? `mese ${paybackMonth.toFixed(1)}`
+                : "— (oltre il contratto)"}
             </p>
           </div>
           <div className="text-right">
             <p className="text-[11px] text-[var(--fg-muted)] font-mono uppercase tracking-wider">
-              Upfront investment
+              Tetto investimento
             </p>
-            <p className="number text-[20px] text-[color:var(--meus-orange)] mt-1">
+            <p className="number text-[20px] mt-1" style={{ color: "var(--mono-spice)" }}>
               {fmtEur(outputs.maxInvestment)}
             </p>
           </div>
@@ -91,12 +89,12 @@ export const PaybackTimeline = ({ inputs, outputs }: PaybackTimelineProps) => {
                 <linearGradient id="profit-fade" x1="0" y1="0" x2="0" y2="1">
                   <stop
                     offset="0%"
-                    stopColor="var(--meus-orange)"
+                    stopColor="var(--mono-spice)"
                     stopOpacity={0.18}
                   />
                   <stop
                     offset="100%"
-                    stopColor="var(--meus-orange)"
+                    stopColor="var(--mono-spice)"
                     stopOpacity={0}
                   />
                 </linearGradient>
@@ -135,15 +133,15 @@ export const PaybackTimeline = ({ inputs, outputs }: PaybackTimelineProps) => {
                 contentStyle={{
                   background: "var(--bg-surface)",
                   border: "1px solid var(--border-default)",
-                  borderRadius: 8,
+                  borderRadius: 0,
                   fontFamily: "var(--font-mono)",
                   fontSize: 12,
                   color: "var(--fg1)",
                 }}
-                labelFormatter={(m: number) => `Month ${m}`}
+                labelFormatter={(m: number) => `Mese ${m}`}
                 formatter={(v: number, key: string) => [
                   fmtEur(v),
-                  key === "cumulative" ? "Gross profit" : "Investment",
+                  key === "cumulative" ? "Margine lordo" : "Investimento",
                 ]}
               />
               <Area
@@ -156,10 +154,10 @@ export const PaybackTimeline = ({ inputs, outputs }: PaybackTimelineProps) => {
               <Line
                 type="monotone"
                 dataKey="cumulative"
-                stroke="var(--meus-orange)"
+                stroke="var(--mono-spice)"
                 strokeWidth={2}
                 dot={false}
-                activeDot={{ r: 4, fill: "var(--meus-orange)" }}
+                activeDot={{ r: 4, fill: "var(--mono-spice)" }}
                 isAnimationActive={false}
               />
               <ReferenceLine
@@ -173,7 +171,7 @@ export const PaybackTimeline = ({ inputs, outputs }: PaybackTimelineProps) => {
                   x={crossPoint.month}
                   y={crossPoint.value}
                   r={5}
-                  fill="var(--meus-orange)"
+                  fill="var(--mono-spice)"
                   stroke="var(--bg-page)"
                   strokeWidth={2}
                   isFront
@@ -185,10 +183,10 @@ export const PaybackTimeline = ({ inputs, outputs }: PaybackTimelineProps) => {
 
         <p className="text-[11px] text-[var(--fg-muted)] mt-4 font-mono tabular tracking-wide text-center">
           {inputs.freePocMonths > 0
-            ? `${inputs.freePocMonths} free PoC mo · `
+            ? `${inputs.freePocMonths} mesi POC gratuiti · `
             : ""}
-          {inputs.contractMonths} mo contract · margin {inputs.grossMargin}% ·
-          payback target {inputs.paybackMonths} mo
+          {inputs.contractMonths} mesi contratto · margine {inputs.grossMargin}% ·
+          target payback {inputs.paybackMonths} mesi
         </p>
       </div>
     </section>

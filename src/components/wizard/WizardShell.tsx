@@ -55,16 +55,16 @@ export const WizardShell = ({
           <div className="flex items-center gap-3">
             <img
               src="/brand/logo-mark-white.svg"
-              alt="MEUS"
+              alt="Monolite"
               className="h-8 w-8"
               draggable={false}
             />
             <div className="flex flex-col gap-1">
               <p className="eyebrow">
-                MEUS · {audience === "sales" ? "Sales view" : "Estimate"}
+                Monolite · {audience === "sales" ? "Vista commerciale" : "Stima"}
               </p>
               <h1 className="font-display text-[19px] md:text-[21px] font-medium tracking-tight leading-tight">
-                Partnership Calculator
+                Calcolatore di valore
               </h1>
             </div>
           </div>
@@ -76,14 +76,14 @@ export const WizardShell = ({
               return (
                 <span
                   key={i}
-                  className="block rounded-full transition-all"
+                  className="block transition-all"
                   style={{
                     width: active ? 24 : 6,
-                    height: 6,
+                    height: 2,
                     background: active
-                      ? "var(--meus-orange)"
+                      ? "var(--mono-spice)"
                       : done
-                        ? "var(--meus-orange-press)"
+                        ? "var(--mono-stone)"
                         : "var(--border-default)",
                   }}
                 />
@@ -95,9 +95,9 @@ export const WizardShell = ({
 
       <div className="flex-1 max-w-[900px] w-full mx-auto px-6 py-10">
         {current ? (
-          <div className="card-meus p-8 md:p-10">
+          <div className="card-mono p-8 md:p-10">
             <p className="eyebrow">
-              Step {stepIdx + 1} of {steps.length}
+              Passo {stepIdx + 1} di {steps.length}
             </p>
             <h2 className="h2 mt-3">{current.title}</h2>
             {current.subtitle && (
@@ -111,14 +111,14 @@ export const WizardShell = ({
                 disabled={stepIdx === 0}
                 onClick={() => setStepIdx((i) => Math.max(0, i - 1))}
               >
-                <ArrowLeft size={14} /> Back
+                <ArrowLeft size={14} /> Indietro
               </button>
               <button
                 className="btn-primary disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none"
                 disabled={!current.isValid(inputs)}
                 onClick={() => setStepIdx((i) => i + 1)}
               >
-                {stepIdx === steps.length - 1 ? "See result" : "Next"} <ArrowRight size={14} />
+                {stepIdx === steps.length - 1 ? "Vedi il risultato" : "Avanti"} <ArrowRight size={14} />
               </button>
             </div>
           </div>
@@ -127,10 +127,10 @@ export const WizardShell = ({
             {renderResult({ inputs, outputs })}
             <div className="mt-8 flex items-center justify-between">
               <button className="btn-ghost" onClick={() => setStepIdx(steps.length - 1)}>
-                <ArrowLeft size={14} /> Back
+                <ArrowLeft size={14} /> Indietro
               </button>
               <button className="btn-ghost" onClick={reset}>
-                <RotateCcw size={14} /> Start over
+                <RotateCcw size={14} /> Ricomincia
               </button>
             </div>
           </div>
@@ -139,7 +139,7 @@ export const WizardShell = ({
 
       <footer className="border-t border-border mt-8">
         <div className="max-w-[900px] mx-auto px-6 py-4 text-[11px] text-text-muted text-center font-mono tracking-[0.08em] uppercase">
-          MEUS S.r.l. Innovativa · Estimates only
+          Monolite · Stime indicative
         </div>
       </footer>
     </main>

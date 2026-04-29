@@ -25,7 +25,7 @@ export const NumericInput = ({
   return (
     <div className="relative flex items-center">
       {prefix && (
-        <span className="absolute left-3 text-[var(--fg3)] font-display text-[28px] font-medium pointer-events-none">
+        <span className="absolute left-3 text-[var(--fg3)] font-display text-[28px] font-normal pointer-events-none">
           {prefix}
         </span>
       )}
@@ -43,14 +43,14 @@ export const NumericInput = ({
           onChange(n);
         }}
         onBlur={() => setDisplay(formatDisplay(value))}
-        className="meus-input font-display text-[28px] font-medium tabular tracking-tight"
+        className="mono-input font-display text-[28px] font-normal tabular tracking-tight"
         style={{
           paddingLeft: prefix ? "2rem" : undefined,
           paddingRight: suffix ? "2rem" : undefined,
         }}
       />
       {suffix && (
-        <span className="absolute right-3 text-[var(--fg3)] font-display text-[28px] font-medium pointer-events-none">
+        <span className="absolute right-3 text-[var(--fg3)] font-display text-[28px] font-normal pointer-events-none">
           {suffix}
         </span>
       )}

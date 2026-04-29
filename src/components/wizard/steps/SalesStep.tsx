@@ -1,17 +1,22 @@
 import type { StepProps } from "../WizardShell";
 import { NumericInput } from "../NumericInput";
 
+/**
+ * Step "Fatturato annuo".
+ * Nome di file storico mantenuto; contenuto riscritto per Monolite.
+ */
 export const SalesStep = ({ inputs, set }: StepProps) => (
   <div className="max-w-md">
-    <label className="label block mb-2">Monthly online sales (€)</label>
+    <label className="label block mb-2">Fatturato annuo (€)</label>
     <NumericInput
-      value={inputs.attributedSales}
-      onChange={(n) => set("attributedSales", n)}
+      value={inputs.annualRevenue}
+      onChange={(n) => set("annualRevenue", n)}
       suffix="€"
       autoFocus
     />
     <p className="text-[12px] text-text-muted mt-2">
-      Average revenue you generate online each month.
+      Ordine di grandezza del fatturato dell'ultimo esercizio chiuso. Usato
+      per stimare la complessità della contabilità e il piano consigliato.
     </p>
   </div>
 );

@@ -1,65 +1,76 @@
-// MEUS pricing model — based on Allegato D (April 2026)
-// All currency in EUR, tokens: 100 tokens = €1
+// Modello di prezzo Monolite — calcolatore di valore PMI + tetto di investimento commerciale.
+// Tutti gli importi in EUR. Token: 100 token = €1.
+//
+// Tre famiglie di ricavo per Monolite:
+//   1. Canone (subscription) della PMI o dello studio.
+//   2. Consumo agenti (token bruciati dagli agenti AI sull'attività dell'azienda).
+//   3. Marketplace fee — 5% sui ricavi degli agenti pubblicati da sviluppatori terzi
+//      (Monolite trattiene 0% sugli agenti che costruisce direttamente, perché li
+//      vende come parte del canone). Lo sviluppatore paga inoltre un canone annuale
+//      come autore (App Store-like) — gestito a livello di account, non in questo
+//      calcolatore di trattativa.
 
 export type Mode = "listino" | "strategic";
-export type Plan = "starter" | "pro" | "enterprise";
+export type Plan = "starter" | "business" | "enterprise" | "studio";
+
+/** Tier di prezzo per il consumo agenti (analogo dei tier CPC/CPS originali).
+    "low/mid/high" rappresenta la complessità media degli agenti che la PMI userà:
+    low = solo agenti standard Monolite, mid = mix con qualche terzo,
+    high = tanti agenti di terze parti, alta personalizzazione. */
 export type PriceTier = "low" | "mid" | "high";
 
 export type ClientType =
-  | "major"
-  | "indie-label"
-  | "artist"
-  | "promoter"
-  | "ticketing"
-  | "booking"
-  | "management"
-  | "brand";
+  | "pmi-small"
+  | "pmi-medium"
+  | "pmi-large"
+  | "studio"
+  | "developer";
 
-export const CLIENT_TYPES: { key: ClientType; label: string }[] = [
-  { key: "major", label: "Major label" },
-  { key: "indie-label", label: "Independent label" },
-  { key: "artist", label: "Artist" },
-  { key: "promoter", label: "Music promoter" },
-  { key: "ticketing", label: "Ticketing" },
-  { key: "booking", label: "Booking agency" },
-  { key: "management", label: "Management agency" },
-  { key: "brand", label: "Brand" },
+export const CLIENT_TYPES: { key: ClientType; label: string; hint: string }[] = [
+  { key: "pmi-small",  label: "Micro impresa",         hint: "1–5 dipendenti, fatturato < €500k" },
+  { key: "pmi-medium", label: "PMI media",             hint: "6–25 dipendenti, €500k–3M" },
+  { key: "pmi-large",  label: "PMI strutturata",       hint: "25–100 dipendenti, €3M–15M" },
+  { key: "studio",     label: "Studio commercialista", hint: "Revisori e commercialisti che servono PMI" },
+  { key: "developer",  label: "Sviluppatore agenti",   hint: "Pubblica agenti sul marketplace Monolite" },
 ];
 
 /**
- * Plan tiering rule — derived from real signals, not from the partner's
- * self-description.
+ * Regola del piano — derivata da segnali concreti, non dalla descrizione che
+ * l'azienda dà di sé.
  *
- * A point is awarded for each metric that crosses the upper / lower band:
- *   - CRM size:        ≥ 250k → +2,  ≥ 50k → +1
- *   - Ad spend:        ≥ €40k → +2,  ≥ €8k → +1
- *   - Online revenue:  ≥ €200k → +2, ≥ €30k → +1
+ * Un punto per ogni metrica che supera la soglia:
+ *   - Dipendenti:        ≥ 50 → +2,  ≥ 10 → +1
+ *   - Fatturato annuo:   ≥ €5M → +2, ≥ €1M → +1
+ *   - Ore mensili contabilità: ≥ 80 → +2, ≥ 30 → +1
  *
- * Score 5+ → enterprise, 2-4 → pro, otherwise starter.
+ * Score 5+ → enterprise, 2-4 → business, altrimenti starter.
  *
- * The thresholds are tuned so that majors / ticketing platforms / large
- * brands land on enterprise; growing indies, promoters, agencies and
- * established artists land on pro; emerging artists and small operators
- * stay on starter.
+ * Per gli studi commercialisti il piano è sempre "studio" (calibrato a parte).
+ * Per gli sviluppatori si applica "starter" (l'autore paga un canone annuale
+ * di sviluppo, fuori dal modello commerciale di questa app).
  */
 export function planFor(metrics: {
-  crmContacts: number;
-  advBudget: number;
-  attributedSales: number;
+  employees: number;
+  annualRevenue: number;
+  monthlyAccountingHours: number;
+  clientType: ClientType;
 }): Plan {
+  if (metrics.clientType === "studio") return "studio";
+  if (metrics.clientType === "developer") return "starter";
+
   let score = 0;
 
-  if (metrics.crmContacts >= 250_000) score += 2;
-  else if (metrics.crmContacts >= 50_000) score += 1;
+  if (metrics.employees >= 50) score += 2;
+  else if (metrics.employees >= 10) score += 1;
 
-  if (metrics.advBudget >= 40_000) score += 2;
-  else if (metrics.advBudget >= 8_000) score += 1;
+  if (metrics.annualRevenue >= 5_000_000) score += 2;
+  else if (metrics.annualRevenue >= 1_000_000) score += 1;
 
-  if (metrics.attributedSales >= 200_000) score += 2;
-  else if (metrics.attributedSales >= 30_000) score += 1;
+  if (metrics.monthlyAccountingHours >= 80) score += 2;
+  else if (metrics.monthlyAccountingHours >= 30) score += 1;
 
   if (score >= 5) return "enterprise";
-  if (score >= 2) return "pro";
+  if (score >= 2) return "business";
   return "starter";
 }
 
@@ -68,164 +79,193 @@ export interface CalcInputs {
   partnerName: string;
   clientType: ClientType;
   /**
-   * When true, `plan` is auto-derived from CRM size + ad spend + online
-   * revenue at compute time. Used by the client wizard so prospects don't
-   * pick a tier — we infer it from their numbers. Sales wizard sets this
-   * to false to keep manual control.
+   * Quando true, `plan` viene calcolato in compute() dai segnali (dipendenti
+   * + fatturato + ore di contabilità). Lato wizard PMI è sempre acceso così
+   * che il prospect non scelga il tier — lo deduciamo dai numeri. La vista
+   * commerciale interna lo spegne per controllo manuale.
    */
   autoPlan: boolean;
   plan: Plan;
   contractMonths: number;
   freePocMonths: number;
-  crmContacts: number;
-  advBudget: number;
-  attributedSales: number;
-  pctAttributed: number; // 0-100
-  clicks: number;
+
+  // Metriche dell'azienda
+  employees: number;
+  annualRevenue: number;
+  monthlyAccountingHours: number;
+  suppliersCount: number;
+  monthlyCommesse: number;
+  monthlyOrders: number;
+
+  // Costi attuali / parametri di calcolo del valore
+  currentErpMonthlyCost: number;
+  avgHourlyRate: number;
+
+  // Composizione del consumo agenti
   priceTier: PriceTier;
-  campaigns: number;
-  avgTargetSize: number;
-  fanSupport: number;
-  loyaltyPrograms: number;
-  analyticsReports: number;
-  grossMargin: number; // 0-100
+  /** Quota % del consumo agenti che arriva da agenti di terze parti
+      pubblicati sul marketplace (0–100). Monolite incassa il 5% di
+      questo ammontare; il resto va all'autore. */
+  thirdPartyAgentShare: number;
+
+  // Add-on
+  includeStudio: boolean;
+
+  // Parametri commerciali (vista /sales)
+  grossMargin: number;
   paybackMonths: number;
-  marginFloor: number; // 0-100 — discount cap
+  marginFloor: number;
 }
 
 export const defaultInputs: CalcInputs = {
   mode: "listino",
   partnerName: "",
-  clientType: "indie-label",
+  clientType: "pmi-medium",
   autoPlan: false,
-  plan: "pro",
+  plan: "business",
   contractMonths: 12,
   freePocMonths: 0,
-  crmContacts: 100000,
-  advBudget: 50000,
-  attributedSales: 300000,
-  pctAttributed: 70,
-  clicks: 40000,
+
+  employees: 18,
+  annualRevenue: 2_500_000,
+  monthlyAccountingHours: 60,
+  suppliersCount: 80,
+  monthlyCommesse: 12,
+  monthlyOrders: 350,
+
+  currentErpMonthlyCost: 950,
+  avgHourlyRate: 38,
+
   priceTier: "mid",
-  campaigns: 4,
-  avgTargetSize: 25000,
-  fanSupport: 600,
-  loyaltyPrograms: 2,
-  analyticsReports: 4,
+  thirdPartyAgentShare: 30,
+
+  includeStudio: true,
+
   grossMargin: 60,
   paybackMonths: 6,
   marginFloor: 30,
 };
 
-// Canone (monthly subscription)
+// Canone mensile (subscription)
 export function canoneMonthly(plan: Plan, mode: Mode): number {
   if (mode === "strategic") {
-    if (plan === "enterprise") return 1250; // RDS-equivalent
-    if (plan === "pro") return 945; // ~5% over listino
-    return 156;
+    if (plan === "enterprise") return 990;
+    if (plan === "business") return 319;
+    if (plan === "studio") return 159;
+    return 79;
   }
-  if (plan === "enterprise") return 2500;
-  if (plan === "pro") return 899;
-  return 149;
+  if (plan === "enterprise") return 1490;
+  if (plan === "business") return 449;
+  if (plan === "studio") return 199;
+  return 99;
 }
 
-// Ad fees (% on managed advertising spend)
-export function advFeeRate(mode: Mode): number {
-  return mode === "strategic" ? 0.02 : 0.04;
+/** Costo mensile dell'add-on "accesso studio" (clean data room dedicata
+    al commercialista esterno). Listino: gratis sul piano studio, a
+    pagamento per le PMI; modalità strategic: incluso ovunque. */
+export function studioAccessMonthly(plan: Plan, mode: Mode, included: boolean): number {
+  if (!included) return 0;
+  if (plan === "studio") return 0;
+  if (mode === "strategic") return 0;
+  if (plan === "enterprise") return 199;
+  if (plan === "business") return 99;
+  return 49;
 }
 
-// CPS (% on attributed sales)
-export function cpsRate(mode: Mode): number {
-  return mode === "strategic" ? 0.04 : 0.06;
-}
-
-// CPC (€ per click) — varies with price tier
-export function cpcRate(mode: Mode, tier: PriceTier): number {
-  if (mode === "strategic") {
-    return tier === "low" ? 0.5 : tier === "mid" ? 0.8 : 1.2;
-  }
-  return tier === "low" ? 0.8 : tier === "mid" ? 1.2 : 1.8;
-}
-
-// DCR (CRM data-cleaning revenue) — tiered, listino only
-export function dcrMonthly(contacts: number, mode: Mode): number {
-  if (mode === "strategic") return 0; // included
-  if (contacts <= 10000) return 49;
-  if (contacts <= 50000) return 149;
-  if (contacts <= 200000) return 399;
-  if (contacts <= 1000000) return 899;
-  return 1800;
-}
-
-// Token consumption per operation
+/** Costo medio (in token) di un'esecuzione standard per ogni famiglia di agente.
+    Calibrato sul consumo medio osservato — è la base che alimenta il preventivo. */
 export const TOKEN_COSTS = {
-  campaign: 1500,
-  targetingPer1k: 30, // tokens per 1000 targets
-  fanSupportChat: 5,
-  loyaltyProgram: 8000,
-  analyticsReport: 1200,
+  primaNotaPer100Movimenti: 800,
+  crmEnrichmentPerContact:   200,   // creazione + arricchimento contatto
+  supplierUpdatePerSupplier: 1500,  // mantiene listino aggiornato per fornitore/mese
+  warehouseMovementPerOrder: 50,    // movimento di magazzino per ordine
+  commessaPerActiveProject: 5000,   // gestione commessa attiva, mensile
+  industrialClosureMonthly: 3000,   // chiusura contabilità industriale, mensile
 };
 
-export const TOKEN_RATE = 0.01; // 100 tokens = €1
+export const TOKEN_RATE = 0.01; // 100 token = €1
 
-// Tokens included per plan / month
+// Token inclusi nel canone, per piano
 export function tokensIncluded(plan: Plan): number {
-  if (plan === "enterprise") return 80000;
-  if (plan === "pro") return 25000;
-  return 5000;
+  if (plan === "enterprise") return 80_000;
+  if (plan === "business")   return 25_000;
+  if (plan === "studio")     return 18_000;
+  return 5_000;
+}
+
+/** Modificatore tier sui token consumati — riflette la complessità media
+    degli agenti scelti dalla PMI. */
+export function tokenTierMultiplier(tier: PriceTier): number {
+  if (tier === "low") return 0.85;
+  if (tier === "high") return 1.25;
+  return 1.0;
+}
+
+/** Commissione che Monolite trattiene sui ricavi degli agenti pubblicati
+    da sviluppatori terzi (modello App Store: il 5% va a Monolite, il 95%
+    all'autore). Sugli agenti costruiti da Monolite la commissione effettiva
+    è 100% perché il prezzo viene incassato direttamente da Monolite via
+    consumo token. */
+export const MARKETPLACE_FEE_RATE = 0.05;
+
+// Quanto Monolite incassa dagli agenti di terze parti, dato il consumo
+// totale del cliente e la quota di consumo che arriva da terzi.
+export function marketplaceFeeFromConsumption(monthlyTokensConsumed: number, thirdPartySharePct: number): number {
+  const thirdPartyEur = monthlyTokensConsumed * TOKEN_RATE * (thirdPartySharePct / 100);
+  return thirdPartyEur * MARKETPLACE_FEE_RATE;
 }
 
 export interface CalcOutputs {
-  // Monthly
+  // Mensile
   monthlyCanone: number;
-  monthlyAdvFee: number;
-  monthlySalesFee: number; // CPS or CPC fallback
-  monthlyDcr: number;
+  monthlyStudioFee: number;
+  monthlyMarketplaceFee: number;
   monthlyTokensConsumed: number;
   monthlyTokensIncluded: number;
   monthlyExtraTokens: number;
   monthlyTokenRevenue: number;
   monthlyRevenue: number;
 
-  // Active months (after POC)
+  // Mesi attivi (dopo POC)
   activeMonths: number;
 
-  // Annualized revenue
+  // Annuale
   annualRevenue: number;
   annualGrossProfit: number;
 
-  // Contract totals
+  // Sul contratto
   contractRevenue: number;
   contractGrossProfit: number;
 
-  // Investment ceilings
+  // Soffitti di investimento (vista commerciale)
   maxInvestment: number;
   maxFeeDiscount: number;
-  mediaBarter: number;
+  agentCreditGrant: number;
 
-  // KPIs
+  // KPI
   paybackAtMax: number;
   ltvCac: number;
   pctOfRevenue: number;
   monthlyEquivalent: number;
 
-  // Breakdown for table
+  // Voci ricavo annuali
   breakdown: { line: string; annual: number }[];
 
-  // Token detail
+  // Dettaglio consumo token
   tokenDetail: { op: string; tokens: number; eur: number }[];
 
-  // Health
+  // Salute della trattativa
   health: "ok" | "warn" | "bad";
 }
 
-/** Resolve the active plan: auto-derive when autoPlan is on, else use inp.plan. */
+/** Risolve il piano attivo: deriva da segnali se autoPlan è acceso. */
 export function resolvePlan(inp: CalcInputs): Plan {
   if (!inp.autoPlan) return inp.plan;
   return planFor({
-    crmContacts: inp.crmContacts,
-    advBudget: inp.advBudget,
-    attributedSales: inp.attributedSales,
+    employees: inp.employees,
+    annualRevenue: inp.annualRevenue,
+    monthlyAccountingHours: inp.monthlyAccountingHours,
+    clientType: inp.clientType,
   });
 }
 
@@ -233,28 +273,32 @@ export function compute(inp: CalcInputs): CalcOutputs {
   const plan = resolvePlan(inp);
 
   const monthlyCanone = canoneMonthly(plan, inp.mode);
-  const monthlyAdvFee = inp.advBudget * advFeeRate(inp.mode);
+  const monthlyStudioFee = studioAccessMonthly(plan, inp.mode, inp.includeStudio);
 
-  const cpsPart = (inp.attributedSales * inp.pctAttributed) / 100 * cpsRate(inp.mode);
-  const cpcPart = inp.clicks * cpcRate(inp.mode, inp.priceTier) * (1 - inp.pctAttributed / 100);
-  const monthlySalesFee = cpsPart + cpcPart;
+  // Consumo token — base per ogni famiglia di agente
+  const tPrimaNota = (inp.monthlyAccountingHours / 6) * TOKEN_COSTS.primaNotaPer100Movimenti;
+  const tCrm       = (inp.monthlyOrders * 0.4) * TOKEN_COSTS.crmEnrichmentPerContact;
+  const tSuppliers = inp.suppliersCount * TOKEN_COSTS.supplierUpdatePerSupplier;
+  const tWarehouse = inp.monthlyOrders * TOKEN_COSTS.warehouseMovementPerOrder;
+  const tCommesse  = inp.monthlyCommesse * TOKEN_COSTS.commessaPerActiveProject;
+  const tClosure   = TOKEN_COSTS.industrialClosureMonthly;
 
-  const monthlyDcr = dcrMonthly(inp.crmContacts, inp.mode);
-
-  // Token consumption
-  const tCampaigns = inp.campaigns * TOKEN_COSTS.campaign;
-  const tTargeting = inp.campaigns * (inp.avgTargetSize / 1000) * TOKEN_COSTS.targetingPer1k;
-  const tSupport = inp.fanSupport * TOKEN_COSTS.fanSupportChat;
-  const tLoyalty = (inp.loyaltyPrograms / 12) * TOKEN_COSTS.loyaltyProgram;
-  const tReports = inp.analyticsReports * TOKEN_COSTS.analyticsReport;
-  const monthlyTokensConsumed = Math.round(tCampaigns + tTargeting + tSupport + tLoyalty + tReports);
+  const tierMul = tokenTierMultiplier(inp.priceTier);
+  const monthlyTokensConsumed = Math.round(
+    (tPrimaNota + tCrm + tSuppliers + tWarehouse + tCommesse + tClosure) * tierMul
+  );
 
   const monthlyTokensIncluded = tokensIncluded(plan);
   const monthlyExtraTokens = Math.max(0, monthlyTokensConsumed - monthlyTokensIncluded);
   const monthlyTokenRevenue = monthlyExtraTokens * TOKEN_RATE;
 
+  const monthlyMarketplaceFee = marketplaceFeeFromConsumption(
+    monthlyTokensConsumed,
+    inp.thirdPartyAgentShare
+  );
+
   const monthlyRevenue =
-    monthlyCanone + monthlyAdvFee + monthlySalesFee + monthlyDcr + monthlyTokenRevenue;
+    monthlyCanone + monthlyStudioFee + monthlyTokenRevenue + monthlyMarketplaceFee;
 
   const activeMonths = Math.max(0, inp.contractMonths - inp.freePocMonths);
   const annualRevenue = monthlyRevenue * Math.min(12, activeMonths);
@@ -263,14 +307,17 @@ export function compute(inp: CalcInputs): CalcOutputs {
   const contractRevenue = monthlyRevenue * activeMonths;
   const contractGrossProfit = contractRevenue * (inp.grossMargin / 100);
 
-  // Max investment formula
+  // Tetto di investimento Monolite — la nostra "CAC" massima.
   const horizon = Math.min(inp.paybackMonths, inp.contractMonths);
   const maxInvestment = (annualGrossProfit / 12) * horizon;
 
-  // Max fee discount: limited so retained margin stays >= floor
+  // Sconto canone massimo: limitato così che il margine residuo sia ≥ floor.
   const retainable = monthlyRevenue * (1 - inp.marginFloor / 100) * activeMonths;
   const maxFeeDiscount = Math.max(0, Math.min(maxInvestment, retainable));
-  const mediaBarter = Math.max(0, maxInvestment - maxFeeDiscount);
+  // Quel che resta dell'investimento massimo, quando il fee discount è già pieno,
+  // viene speso come "agent credit" (token regalati per partire) — analogo del
+  // media barter del modello originale.
+  const agentCreditGrant = Math.max(0, maxInvestment - maxFeeDiscount);
 
   const paybackAtMax = annualGrossProfit > 0 ? maxInvestment / (annualGrossProfit / 12) : 0;
   const cac = maxInvestment;
@@ -280,19 +327,19 @@ export function compute(inp: CalcInputs): CalcOutputs {
   const monthlyEquivalent = inp.contractMonths > 0 ? maxInvestment / inp.contractMonths : 0;
 
   const breakdown = [
-    { line: "Subscription (Canone)", annual: monthlyCanone * Math.min(12, activeMonths) },
-    { line: "Advertising Fee", annual: monthlyAdvFee * Math.min(12, activeMonths) },
-    { line: "Sales Fee (CPS + CPC)", annual: monthlySalesFee * Math.min(12, activeMonths) },
-    { line: "Data Cleaning (DCR)", annual: monthlyDcr * Math.min(12, activeMonths) },
-    { line: "Extra Tokens", annual: monthlyTokenRevenue * Math.min(12, activeMonths) },
+    { line: "Canone Monolite",            annual: monthlyCanone * Math.min(12, activeMonths) },
+    { line: "Accesso studio",             annual: monthlyStudioFee * Math.min(12, activeMonths) },
+    { line: "Token aggiuntivi (agenti)",  annual: monthlyTokenRevenue * Math.min(12, activeMonths) },
+    { line: "Marketplace (5% terzi)",     annual: monthlyMarketplaceFee * Math.min(12, activeMonths) },
   ];
 
   const tokenDetail = [
-    { op: "Campaigns", tokens: Math.round(tCampaigns), eur: tCampaigns * TOKEN_RATE },
-    { op: "Targeting", tokens: Math.round(tTargeting), eur: tTargeting * TOKEN_RATE },
-    { op: "Fan Support chats", tokens: Math.round(tSupport), eur: tSupport * TOKEN_RATE },
-    { op: "Loyalty Programs", tokens: Math.round(tLoyalty), eur: tLoyalty * TOKEN_RATE },
-    { op: "Analytics Reports", tokens: Math.round(tReports), eur: tReports * TOKEN_RATE },
+    { op: "Prima nota",            tokens: Math.round(tPrimaNota * tierMul), eur: tPrimaNota * tierMul * TOKEN_RATE },
+    { op: "CRM e arricchimento",   tokens: Math.round(tCrm * tierMul),       eur: tCrm * tierMul * TOKEN_RATE },
+    { op: "Fornitori e listini",   tokens: Math.round(tSuppliers * tierMul), eur: tSuppliers * tierMul * TOKEN_RATE },
+    { op: "Magazzino",             tokens: Math.round(tWarehouse * tierMul), eur: tWarehouse * tierMul * TOKEN_RATE },
+    { op: "Commesse attive",       tokens: Math.round(tCommesse * tierMul),  eur: tCommesse * tierMul * TOKEN_RATE },
+    { op: "Contabilità industriale", tokens: Math.round(tClosure * tierMul), eur: tClosure * tierMul * TOKEN_RATE },
   ];
 
   let health: "ok" | "warn" | "bad" = "ok";
@@ -301,9 +348,8 @@ export function compute(inp: CalcInputs): CalcOutputs {
 
   return {
     monthlyCanone,
-    monthlyAdvFee,
-    monthlySalesFee,
-    monthlyDcr,
+    monthlyStudioFee,
+    monthlyMarketplaceFee,
     monthlyTokensConsumed,
     monthlyTokensIncluded,
     monthlyExtraTokens,
@@ -316,7 +362,7 @@ export function compute(inp: CalcInputs): CalcOutputs {
     contractGrossProfit,
     maxInvestment,
     maxFeeDiscount,
-    mediaBarter,
+    agentCreditGrant,
     paybackAtMax,
     ltvCac,
     pctOfRevenue,
@@ -338,115 +384,99 @@ export interface ScenarioPreset {
 }
 
 export const SCENARIOS: ScenarioPreset[] = [
-  { key: "cons", label: "Conservative", badge: "Low risk", desc: "65% margin · 6-mo payback", grossMargin: 65, paybackMonths: 6 },
-  { key: "bal", label: "Balanced", badge: "Recommended", desc: "55% margin · 18-mo payback", grossMargin: 55, paybackMonths: 18, highlight: true },
-  { key: "agg", label: "Aggressive (Trophy)", badge: "High stakes", desc: "45% margin · 36-mo payback", grossMargin: 45, paybackMonths: 36 },
+  { key: "cons", label: "Conservativo",          badge: "Basso rischio",  desc: "65% margine · payback 6 mesi",  grossMargin: 65, paybackMonths: 6 },
+  { key: "bal",  label: "Bilanciato",            badge: "Consigliato",    desc: "55% margine · payback 18 mesi", grossMargin: 55, paybackMonths: 18, highlight: true },
+  { key: "agg",  label: "Aggressivo (trofeo)",   badge: "Alta posta",     desc: "45% margine · payback 36 mesi", grossMargin: 45, paybackMonths: 36 },
 ];
 
-// Estimated value MEUS delivers — uplift in attributed sales the partner can expect
-export const UPLIFT_RATE = 0.15;
+// Stima del valore consegnato — uplift di efficienza che la PMI ottiene
+// sui processi che Monolite assorbe (oltre al puro risparmio di costo).
+export const UPLIFT_RATE = 0.10;
 
 export function estimateMonthlyUplift(inp: CalcInputs): number {
-  return inp.attributedSales * UPLIFT_RATE;
+  // Uplift come quota del fatturato annuo / 12 — riflette la capacità di
+  // riallocare ore operative al business vero (commerciale, prodotto).
+  return (inp.annualRevenue / 12) * UPLIFT_RATE;
 }
 
 // ---------------------------------------------------------------------------
-// Cost-reduction model — what MEUS replaces or makes cheaper for the partner.
-// Used to make the value proposition explicit on the result screen.
+// Modello di costo evitato — quello che Monolite sostituisce o rende meno caro
+// per la PMI. Serve a rendere esplicita la value proposition nel result.
 // ---------------------------------------------------------------------------
 
 export interface CostReductionBreakdown {
-  /** Ad-tech / mar-tech tools the partner can drop (CDP, audience builder, lookalike, push provider, dedup). */
-  toolConsolidation: number;
-  /** Money the partner stops wasting on broad targeting once segments are sharper. */
-  adWasteReduction: number;
-  /** CRM cleaning + manual list-pull + dedup ops time saved. */
-  opsTimeSaved: number;
-  /** Data-team hours saved on manual segment building, list pulls, audience handoffs. */
-  segmentOpsSaved: number;
-  /** Fan-support automation (AI chat, FAQ deflection) replaces headcount and CS SaaS. */
-  fanSupportAutomation: number;
+  /** Ore di prima nota / data entry contabile assorbite dagli agenti. */
+  accountingHoursSaved: number;
+  /** ERP / gestionale legacy che la PMI può dismettere. */
+  erpReplaced: number;
+  /** Ore di gestione fornitori e listini risparmiate. */
+  supplierOpsSaved: number;
+  /** Ore di gestione commesse risparmiate (project ops, scheduling). */
+  commesseOpsSaved: number;
+  /** Ore dello studio commercialista risparmiate dall'accesso diretto al DB. */
+  studioHoursSaved: number;
   total: number;
 }
 
-/**
- * Tools the partner can drop when adopting MEUS — proxied as a fixed monthly figure per plan.
- * A modern stack (CDP + audience builder + lookalike SaaS + push provider + dedup tool +
- * reverse-ETL) typically lands around these numbers for music partners we've benchmarked.
- */
-const TOOL_CONSOLIDATION_BY_PLAN: Record<Plan, number> = {
-  starter: 1200,
-  pro: 4500,
-  enterprise: 12000,
-};
-
-/** Sharper segments + lookalike → less wasted spend on broad audiences. */
-export const AD_WASTE_REDUCTION_RATE = 0.08;
-
-/** CRM cleaning + dedup + manual list pulls that MEUS automates (€ per contact / month). */
-export const OPS_COST_PER_CONTACT = 0.005;
-
-/** Hours the data/marketing team no longer spends building segments manually (€ per contact / month). */
-export const SEGMENT_OPS_PER_CONTACT = 0.004;
-
-/** Fan-support automation per plan — AI chat + FAQ deflection replaces headcount + CS SaaS. */
-const FAN_SUPPORT_BY_PLAN: Record<Plan, number> = {
-  starter: 600,
-  pro: 2200,
-  enterprise: 6500,
+/** Ore mensili tipiche per la gestione fornitori/listini (per fornitore). */
+export const SUPPLIER_OPS_HOURS_PER_SUPPLIER = 0.4;
+/** Ore mensili tipiche per gestione commessa attiva. */
+export const COMMESSA_OPS_HOURS_PER_PROJECT = 4;
+/** Ore mensili dello studio risparmiate dalla clean data room (per piano). */
+const STUDIO_HOURS_SAVED_BY_PLAN: Record<Plan, number> = {
+  starter: 2,
+  business: 6,
+  enterprise: 14,
+  studio: 0, // gli studi non risparmiano se stessi
 };
 
 export function estimateMonthlyCostReduction(inp: CalcInputs): CostReductionBreakdown {
   const plan = resolvePlan(inp);
-  const toolConsolidation = TOOL_CONSOLIDATION_BY_PLAN[plan] ?? 0;
-  const adWasteReduction = inp.advBudget * AD_WASTE_REDUCTION_RATE;
-  const opsTimeSaved = inp.crmContacts * OPS_COST_PER_CONTACT;
-  const segmentOpsSaved = inp.crmContacts * SEGMENT_OPS_PER_CONTACT;
-  const fanSupportAutomation = FAN_SUPPORT_BY_PLAN[plan] ?? 0;
+  const accountingHoursSaved = inp.monthlyAccountingHours * inp.avgHourlyRate * 0.7;
+  const erpReplaced = inp.currentErpMonthlyCost;
+  const supplierOpsSaved = inp.suppliersCount * SUPPLIER_OPS_HOURS_PER_SUPPLIER * inp.avgHourlyRate;
+  const commesseOpsSaved = inp.monthlyCommesse * COMMESSA_OPS_HOURS_PER_PROJECT * inp.avgHourlyRate;
+  const studioHoursSaved = inp.includeStudio
+    ? (STUDIO_HOURS_SAVED_BY_PLAN[plan] ?? 0) * inp.avgHourlyRate
+    : 0;
+
   const total =
-    toolConsolidation +
-    adWasteReduction +
-    opsTimeSaved +
-    segmentOpsSaved +
-    fanSupportAutomation;
+    accountingHoursSaved +
+    erpReplaced +
+    supplierOpsSaved +
+    commesseOpsSaved +
+    studioHoursSaved;
+
   return {
-    toolConsolidation,
-    adWasteReduction,
-    opsTimeSaved,
-    segmentOpsSaved,
-    fanSupportAutomation,
+    accountingHoursSaved,
+    erpReplaced,
+    supplierOpsSaved,
+    commesseOpsSaved,
+    studioHoursSaved,
     total,
   };
 }
 
 /**
- * Solve for the monthly attributed-sales level at which net monthly value = 0,
- * holding every other input fixed. Used to show partners "the deal turns
- * positive at €X/mo" so the pricing model is transparent at any scale.
+ * Risolvi il livello di fatturato annuo a cui il valore netto mensile
+ * passa per zero, tenendo fissi gli altri input.
  *
- * Net value(S) = UPLIFT_RATE·S + savings − (canone + advFee + cps·pctAtt·S + cpcPart + DCR)
- * Setting to 0 → S* = (canone + advFee + cpcPart + DCR − savings) / (UPLIFT_RATE − cps·pctAtt)
+ * Net(R) = UPLIFT_RATE·R/12 + savings − (canone + studio + tokenRev + marketplaceFee)
+ * Setting to 0 → R* = 12·(canone + studio + tokenRev + marketplaceFee − savings) / UPLIFT_RATE
  *
- * Returns:
- *  - 0          → already breaks even at any sales level (savings cover fixed costs)
- *  - Infinity   → uplift rate is at or below the effective CPS take, never breaks even
- *  - finite > 0 → the actual break-even attributed-sales figure
+ * Restituisce 0 se il break-even è già coperto dai soli risparmi,
+ * Infinity se UPLIFT_RATE è ≤ 0.
  */
-export function breakEvenAttributedSales(inp: CalcInputs): number {
-  const denom = UPLIFT_RATE - (inp.pctAttributed / 100) * cpsRate(inp.mode);
-  if (denom <= 0) return Infinity;
+export function breakEvenAnnualRevenue(inp: CalcInputs): number {
+  if (UPLIFT_RATE <= 0) return Infinity;
 
-  const cpcPart =
-    inp.clicks * cpcRate(inp.mode, inp.priceTier) * (1 - inp.pctAttributed / 100);
-  const advFee = inp.advBudget * advFeeRate(inp.mode);
-  const dcr = dcrMonthly(inp.crmContacts, inp.mode);
-  const canone = canoneMonthly(resolvePlan(inp), inp.mode);
+  const out = compute(inp);
   const savings = estimateMonthlyCostReduction(inp).total;
-
-  const numerator = canone + advFee + cpcPart + dcr - savings;
+  const monthlyCost = out.monthlyRevenue;
+  const numerator = monthlyCost - savings;
   if (numerator <= 0) return 0;
 
-  return numerator / denom;
+  return (12 * numerator) / UPLIFT_RATE;
 }
 
 export function fmtEur(n: number): string {

@@ -10,86 +10,115 @@ interface SalesInputsPanelProps {
 }
 
 /**
- * All-visible inputs grid — the editorial body of /sales.
- * Two groups:
- *  1. Partner snapshot — what the partner brings to the table.
- *  2. Advanced (collapsible) — sales-only knobs (margin, payback, marginFloor)
- *     that drive maxInvestment / discount headroom.
+ * Griglia di input completamente visibile — il corpo editoriale di /sales.
+ * Due gruppi:
+ *  1. Profilo PMI — numeri concreti dell'azienda (dipendenti, fatturato,
+ *     ore di contabilità, fornitori, commesse, costi attuali).
+ *  2. Avanzato (collassabile) — leve commerciali (margine, payback,
+ *     marginFloor, modificatore tier, quota terzi) che pilotano il
+ *     tetto di investimento.
  */
 export const SalesInputsPanel = ({ inputs, set }: SalesInputsPanelProps) => {
   const [showAdvanced, setShowAdvanced] = useState(false);
 
   return (
     <div className="space-y-10">
-      {/* ─────────────────────────── Partner snapshot ─────────────────────────── */}
+      {/* ─────────────────────────── Profilo PMI ─────────────────────────── */}
       <section>
-        <p className="eyebrow eyebrow-accent">Partner snapshot</p>
-        <h2 className="h3 mt-3">What does the partner bring?</h2>
+        <p className="eyebrow eyebrow-accent">Profilo PMI</p>
+        <h2 className="h3 mt-3">Cosa porta sul tavolo l'azienda?</h2>
 
         <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-          <Field label="Monthly online sales" helper="What they're already selling per month.">
+          <Field label="Fatturato annuo" helper="Ultimo esercizio chiuso, in €.">
             <NumericInput
-              value={inputs.attributedSales}
-              onChange={(n) => set("attributedSales", n)}
+              value={inputs.annualRevenue}
+              onChange={(n) => set("annualRevenue", n)}
               suffix="€"
             />
           </Field>
 
-          <Field label="Monthly ad spend" helper="Budget MEUS will manage on top.">
+          <Field label="Dipendenti" helper="Persone interne, incluso il titolare.">
             <NumericInput
-              value={inputs.advBudget}
-              onChange={(n) => set("advBudget", n)}
+              value={inputs.employees}
+              onChange={(n) => set("employees", n)}
+            />
+          </Field>
+
+          <Field label="Ore di contabilità (mese)" helper="Prima nota, riconciliazioni, fatture passive.">
+            <NumericInput
+              value={inputs.monthlyAccountingHours}
+              onChange={(n) => set("monthlyAccountingHours", n)}
+              suffix="h"
+            />
+          </Field>
+
+          <Field label="Fornitori attivi" helper="Anagrafiche con cui mantieni il listino.">
+            <NumericInput
+              value={inputs.suppliersCount}
+              onChange={(n) => set("suppliersCount", n)}
+            />
+          </Field>
+
+          <Field label="Commesse attive (mese)" helper="In media — 0 se non lavora a commessa.">
+            <NumericInput
+              value={inputs.monthlyCommesse}
+              onChange={(n) => set("monthlyCommesse", n)}
+            />
+          </Field>
+
+          <Field label="Ordini al mese" helper="Stima del volume di movimenti su CRM/magazzino.">
+            <NumericInput
+              value={inputs.monthlyOrders}
+              onChange={(n) => set("monthlyOrders", n)}
+            />
+          </Field>
+
+          <Field label="Costo ERP/gestionale attuale" helper="Canone mensile del software che Monolite sostituisce.">
+            <NumericInput
+              value={inputs.currentErpMonthlyCost}
+              onChange={(n) => set("currentErpMonthlyCost", n)}
               suffix="€"
             />
           </Field>
 
-          <Field label="CRM contacts" helper="Audience size we'll connect to.">
+          <Field label="Costo orario medio (ops)" helper="€/ora medio per il personale che fa data entry.">
             <NumericInput
-              value={inputs.crmContacts}
-              onChange={(n) => set("crmContacts", n)}
+              value={inputs.avgHourlyRate}
+              onChange={(n) => set("avgHourlyRate", n)}
+              suffix="€"
             />
           </Field>
 
-          <Field
-            label="Monthly clicks"
-            helper="Used for the per-click portion of the sales fee."
-          >
-            <NumericInput
-              value={inputs.clicks}
-              onChange={(n) => set("clicks", n)}
-            />
-          </Field>
-
-          <Field
-            label="Attributed share"
-            helper={`${inputs.pctAttributed}% of sales tracked via CPS, the rest via CPC on clicks.`}
-          >
-            <SliderRow
-              value={inputs.pctAttributed}
-              min={0}
-              max={100}
-              step={5}
-              onChange={(v) => set("pctAttributed", v)}
-              suffix="%"
-            />
-          </Field>
-
-          <Field label="CPC tier" helper="Click pricing band — higher tiers fit higher-CTR markets.">
+          <Field label="Tier consumo agenti" helper="Mix di agenti standard vs personalizzati.">
             <SegmentedControl
               layout="block"
               value={inputs.priceTier}
               onChange={(v) => set("priceTier", v)}
               options={[
-                { value: "low", label: "Low" },
-                { value: "mid", label: "Mid" },
-                { value: "high", label: "High" },
+                { value: "low", label: "Basso" },
+                { value: "mid", label: "Medio" },
+                { value: "high", label: "Alto" },
               ]}
             />
           </Field>
 
           <Field
-            label="Free PoC months"
-            helper="Pilot months at €0 — count against contractMonths."
+            label="Quota agenti di terzi"
+            helper={`${inputs.thirdPartyAgentShare}% del consumo è agenti pubblicati da sviluppatori esterni — Monolite incassa il 5% di quella quota.`}
+          >
+            <SliderRow
+              value={inputs.thirdPartyAgentShare}
+              min={0}
+              max={100}
+              step={5}
+              onChange={(v) => set("thirdPartyAgentShare", v)}
+              suffix="%"
+            />
+          </Field>
+
+          <Field
+            label="POC gratuiti (mesi)"
+            helper="Mesi pilota a €0 — scalano dal contratto."
           >
             <SegmentedControl
               layout="block"
@@ -97,24 +126,39 @@ export const SalesInputsPanel = ({ inputs, set }: SalesInputsPanelProps) => {
               onChange={(v) => set("freePocMonths", v)}
               options={[
                 { value: 0, label: "0" },
-                { value: 1, label: "1 mo" },
-                { value: 2, label: "2 mo" },
-                { value: 3, label: "3 mo" },
+                { value: 1, label: "1 m" },
+                { value: 2, label: "2 m" },
+                { value: 3, label: "3 m" },
+              ]}
+            />
+          </Field>
+
+          <Field
+            label="Accesso studio commercialista"
+            helper="Add-on clean data room per il commercialista esterno."
+          >
+            <SegmentedControl
+              layout="row"
+              value={inputs.includeStudio ? 1 : 0}
+              onChange={(v) => set("includeStudio", v === 1)}
+              options={[
+                { value: 1, label: "Sì" },
+                { value: 0, label: "No" },
               ]}
             />
           </Field>
         </div>
       </section>
 
-      {/* ─────────────────────────── Advanced (sales-only) ─────────────────────────── */}
+      {/* ─────────────────────────── Avanzato ─────────────────────────── */}
       <section>
         <button
           type="button"
           onClick={() => setShowAdvanced((v) => !v)}
           className="flex items-baseline gap-2 text-left group"
         >
-          <p className="eyebrow group-hover:text-[color:var(--meus-orange)] transition-colors">
-            Advanced — deal economics
+          <p className="eyebrow group-hover:text-[color:var(--mono-spice)] transition-colors">
+            Avanzato — economia della trattativa
           </p>
           <ChevronDown
             size={14}
@@ -128,8 +172,8 @@ export const SalesInputsPanel = ({ inputs, set }: SalesInputsPanelProps) => {
         {showAdvanced && (
           <div className="mt-5 grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-6">
             <Field
-              label="Gross margin"
-              helper={`MEUS' margin assumption — drives annual gross profit.`}
+              label="Margine lordo"
+              helper="Ipotesi di margine — pilota il profitto annuo."
             >
               <SliderRow
                 value={inputs.grossMargin}
@@ -142,8 +186,8 @@ export const SalesInputsPanel = ({ inputs, set }: SalesInputsPanelProps) => {
             </Field>
 
             <Field
-              label="Payback horizon"
-              helper="Months to recoup upfront investment from gross profit."
+              label="Orizzonte payback"
+              helper="Mesi entro cui rientriamo dell'investimento."
             >
               <SliderRow
                 value={inputs.paybackMonths}
@@ -151,13 +195,13 @@ export const SalesInputsPanel = ({ inputs, set }: SalesInputsPanelProps) => {
                 max={24}
                 step={1}
                 onChange={(v) => set("paybackMonths", v)}
-                suffix=" mo"
+                suffix=" m"
               />
             </Field>
 
             <Field
-              label="Margin floor"
-              helper="Hard cap on fee discount — what MEUS must keep."
+              label="Margine minimo"
+              helper="Cap rigido sullo sconto canone — quanto deve restare a Monolite."
             >
               <SliderRow
                 value={inputs.marginFloor}
@@ -215,14 +259,14 @@ const SliderRow = ({
   <div className="flex items-center gap-4">
     <input
       type="range"
-      className="meus-range flex-1"
+      className="mono-range flex-1"
       min={min}
       max={max}
       step={step}
       value={value}
       onChange={(e) => onChange(+e.target.value)}
     />
-    <span className="font-display text-[20px] font-medium tabular tracking-tight text-[var(--fg1)] min-w-[64px] text-right">
+    <span className="font-display text-[20px] font-normal tabular tracking-tight text-[var(--fg1)] min-w-[64px] text-right">
       {fmtNum(value)}
       {suffix}
     </span>

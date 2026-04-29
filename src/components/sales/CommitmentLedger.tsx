@@ -5,40 +5,37 @@ interface CommitmentLedgerProps {
 }
 
 /**
- * Sales-only output: the four numbers that govern what MEUS can commit to win
- * the deal. Each row carries a benchmark band so reps can see at-a-glance
- * whether this deal is cautious, normal, or aggressive vs. typical mid-market
- * partnerships.
+ * Output sales-only: i quattro numeri che governano cosa Monolite può
+ * mettere sul tavolo per chiudere il deal. Ogni riga ha una banda
+ * benchmark per leggere a colpo d'occhio se la trattativa è cauta,
+ * normale o aggressiva.
  */
 export const CommitmentLedger = ({ outputs }: CommitmentLedgerProps) => {
   const rows: LedgerRow[] = [
     {
-      label: "Max upfront investment",
+      label: "Tetto investimento",
       value: fmtEur(outputs.maxInvestment),
-      sub: `${fmtPct(outputs.pctOfRevenue, 1)} of contract`,
-      // Industry benchmark — % of contract revenue MEUS can put in upfront
+      sub: `${fmtPct(outputs.pctOfRevenue, 1)} del contratto`,
       band: positionInBand(outputs.pctOfRevenue, [0.08, 0.18, 0.32]),
-      bandHint: "Typical 8 – 18% · Aggressive 32%+",
+      bandHint: "Tipico 8 – 18% · Aggressivo 32%+",
     },
     {
-      label: "Max fee discount",
+      label: "Sconto canone max",
       value: fmtEur(outputs.maxFeeDiscount),
-      sub: outputs.maxFeeDiscount >= outputs.maxInvestment ? "fully covered by margin" : "capped by margin floor",
+      sub: outputs.maxFeeDiscount >= outputs.maxInvestment ? "coperto dal margine" : "limitato dal margine minimo",
       band: outputs.maxInvestment > 0
         ? outputs.maxFeeDiscount / outputs.maxInvestment
         : 0,
-      bandHint: "Share of upfront commitment that fits as a fee discount",
+      bandHint: "Quota dell'impegno totale che ci sta come sconto canone",
     },
     {
-      label: "Media barter",
-      value: fmtEur(outputs.mediaBarter),
-      sub: outputs.mediaBarter > 0 ? "barter top-up needed" : "no barter needed",
+      label: "Credit agenti (token in regalo)",
+      value: fmtEur(outputs.agentCreditGrant),
+      sub: outputs.agentCreditGrant > 0 ? "credito iniziale agenti" : "nessun credito necessario",
       band: outputs.maxInvestment > 0
-        ? outputs.mediaBarter / outputs.maxInvestment
+        ? outputs.agentCreditGrant / outputs.maxInvestment
         : 0,
-      bandHint: "Share of upfront commitment that must be paid in media",
-      // For barter: low share = good. Invert the band so visually the bar
-      // sitting near the left = healthy.
+      bandHint: "Quota dell'impegno totale spesa come credit agenti",
       invertHealth: true,
     },
     {
@@ -46,24 +43,23 @@ export const CommitmentLedger = ({ outputs }: CommitmentLedgerProps) => {
       value: outputs.ltvCac > 0 ? `${outputs.ltvCac.toFixed(2)}×` : "—",
       sub:
         outputs.paybackAtMax > 0
-          ? `payback ${outputs.paybackAtMax.toFixed(1)} mo`
+          ? `payback ${outputs.paybackAtMax.toFixed(1)} mesi`
           : "payback —",
-      // 1.5x bad, 3x ok, 5x great — clamp display to 0..1 over [1, 6]
       band: clamp01((outputs.ltvCac - 1) / 5),
-      bandHint: "Bad < 1.5× · Healthy 3×+ · Excellent 5×+",
+      bandHint: "Critico < 1.5× · Sano 3×+ · Eccellente 5×+",
     },
   ];
 
   return (
     <section>
       <div className="flex items-baseline justify-between gap-3 mb-5">
-        <p className="eyebrow eyebrow-accent">MEUS commitment ledger</p>
+        <p className="eyebrow eyebrow-accent">Commitment Monolite</p>
         <p className="text-[11px] text-[var(--fg-muted)] font-mono uppercase tracking-wider">
-          Sales-only
+          Solo vista interna
         </p>
       </div>
 
-      <div className="card-meus divide-y divide-[color:var(--border-subtle)]">
+      <div className="card-mono divide-y divide-[color:var(--border-subtle)]">
         {rows.map((r) => (
           <LedgerRowView key={r.label} row={r} />
         ))}
@@ -72,13 +68,11 @@ export const CommitmentLedger = ({ outputs }: CommitmentLedgerProps) => {
   );
 };
 
-// ─────────────────────────── Internals ───────────────────────────
-
 interface LedgerRow {
   label: string;
   value: string;
   sub: string;
-  band: number; // 0..1 position in the band
+  band: number;
   bandHint: string;
   invertHealth?: boolean;
 }
@@ -87,7 +81,7 @@ const LedgerRowView = ({ row }: { row: LedgerRow }) => {
   const pct = clamp01(row.band) * 100;
   const healthy = row.invertHealth ? row.band <= 0.4 : row.band >= 0.4;
   const dotColor = healthy
-    ? "var(--meus-orange)"
+    ? "var(--mono-spice)"
     : row.band < 0.2
       ? "var(--danger)"
       : "var(--warning)";
@@ -104,10 +98,10 @@ const LedgerRowView = ({ row }: { row: LedgerRow }) => {
         {row.value}
       </p>
       <div className="md:pl-2">
-        <div className="relative h-1.5 rounded-full bg-[color:var(--bg-active)]">
+        <div className="relative h-1.5 bg-[color:var(--bg-active)]">
           <span
             aria-hidden
-            className="absolute top-0 h-1.5 rounded-full"
+            className="absolute top-0 h-1.5"
             style={{
               left: 0,
               width: `${pct}%`,
@@ -139,13 +133,6 @@ function clamp01(n: number): number {
   return n;
 }
 
-/**
- * Position a value within a 3-stop band (typical-low, typical-high, aggressive).
- * Returns a 0..1 value where:
- *   v ≤ stops[0]      → 0..0.33
- *   stops[0]…stops[1] → 0.33..0.66 (typical zone)
- *   stops[1]…stops[2] → 0.66..1.0 (aggressive)
- */
 function positionInBand(v: number, stops: [number, number, number]): number {
   if (v <= 0) return 0;
   if (v < stops[0]) return (v / stops[0]) * 0.33;

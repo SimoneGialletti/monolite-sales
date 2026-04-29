@@ -10,19 +10,17 @@ interface ScenariosColumnsProps {
 }
 
 /**
- * Three scenarios side-by-side — Conservative · Balanced · Trophy.
- * Each runs `compute()` with the inputs reframed by the scenario's margin
- * and payback. Same partner, same plan, same contract — different MEUS
- * appetite. Mirrors the Index Ventures "see all funding rounds at once"
- * pattern.
+ * Tre scenari affiancati — Conservativo · Bilanciato · Trofeo.
+ * Stessa azienda, stesso piano, stesso contratto — diverso appetito
+ * commerciale di Monolite.
  */
 export const ScenariosColumns = ({ inputs }: ScenariosColumnsProps) => {
   return (
     <section>
       <div className="flex items-baseline justify-between gap-3 mb-5">
-        <p className="eyebrow eyebrow-accent">Scenarios</p>
+        <p className="eyebrow eyebrow-accent">Scenari</p>
         <p className="text-[11px] text-[var(--fg-muted)] font-mono uppercase tracking-wider">
-          Same deal · different appetite
+          Stessa trattativa · diverso appetito
         </p>
       </div>
 
@@ -38,19 +36,19 @@ export const ScenariosColumns = ({ inputs }: ScenariosColumnsProps) => {
             <div
               key={s.key}
               className={
-                "p-5 rounded-[var(--radius-lg)] border " +
+                "p-5 border " +
                 (isHi
-                  ? "border-[color:var(--meus-orange)] bg-[color:var(--bg-surface)]"
+                  ? "border-[color:var(--mono-spice)] bg-[color:var(--bg-surface)]"
                   : "border-[color:var(--border-subtle)] bg-[color:var(--bg-surface)]")
               }
             >
               <div className="flex items-baseline justify-between gap-2">
-                <p className="font-display text-[19px] font-medium tracking-tight text-[var(--fg1)]">
+                <p className="font-display text-[19px] font-normal tracking-tight text-[var(--fg1)]">
                   {s.label}
                 </p>
                 <span
                   className={
-                    "pill " + (isHi ? "pill-brand" : " text-[var(--fg3)]")
+                    "pill " + (isHi ? "pill-brand" : "")
                   }
                   style={
                     isHi
@@ -72,7 +70,7 @@ export const ScenariosColumns = ({ inputs }: ScenariosColumnsProps) => {
 
               <dl className="mt-5 space-y-3">
                 <Row
-                  label="Max upfront"
+                  label="Tetto investimento"
                   value={fmtEur(out.maxInvestment)}
                 />
                 <Row
@@ -87,12 +85,12 @@ export const ScenariosColumns = ({ inputs }: ScenariosColumnsProps) => {
                   label="Payback"
                   value={
                     out.paybackAtMax > 0
-                      ? `${out.paybackAtMax.toFixed(1)} mo`
+                      ? `${out.paybackAtMax.toFixed(1)} m`
                       : "—"
                   }
                 />
                 <Row
-                  label="Annual gross profit"
+                  label="Margine lordo annuo"
                   value={fmtEur(out.annualGrossProfit)}
                 />
               </dl>
@@ -103,8 +101,6 @@ export const ScenariosColumns = ({ inputs }: ScenariosColumnsProps) => {
     </section>
   );
 };
-
-// ─────────────────────────── Helpers ───────────────────────────
 
 const Row = ({ label, value }: { label: string; value: string }) => (
   <div className="flex items-baseline justify-between gap-3">
