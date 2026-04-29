@@ -133,14 +133,14 @@ export const defaultInputs: CalcInputs = {
 
   employees: 18,
   annualRevenue: 2_500_000,
-  monthlyAccountingHours: 60,
+  monthlyAccountingHours: 120,
   suppliersCount: 80,
   monthlyCommesse: 12,
   monthlyOrders: 350,
 
-  currentErpMonthlyCost: 1800,
+  currentErpMonthlyCost: 2500,
   avgHourlyRate: 38,
-  monthlyFullyLoadedCost: 4200,
+  monthlyFullyLoadedCost: 4500,
 
   priceTier: "mid",
   thirdPartyAgentShare: 30,
@@ -456,18 +456,19 @@ export interface CostReductionBreakdown {
 }
 
 /** Ore mensili tipiche per la gestione fornitori/listini (per fornitore).
- *  Mix di fornitori passivi e attivi: listini, ordini, RDA, follow-up
- *  scadenze, riconciliazioni. */
-export const SUPPLIER_OPS_HOURS_PER_SUPPLIER = 0.8;
-/** Ore mensili per ordine: movimenti, picking, controllo qualità,
- *  riconciliazione bolle, gestione resi, inventario rolling. */
-export const WAREHOUSE_OPS_HOURS_PER_ORDER = 0.15;
+ *  Mix di fornitori attivi e passivi: listini, ordini, RDA, tre offerte,
+ *  follow-up consegne, contestazioni, riconciliazioni. Su 80 fornitori
+ *  in PMI manifatturiera/commerciale corrisponde a ~0.7 FTE di un buyer. */
+export const SUPPLIER_OPS_HOURS_PER_SUPPLIER = 1.5;
+/** Ore mensili per ordine: picking, bolla, controllo qualità, riconciliazione
+ *  bolle, gestione resi, inventario rolling. ~15 minuti per ordine end-to-end. */
+export const WAREHOUSE_OPS_HOURS_PER_ORDER = 0.25;
 /** Ore mensili per dipendente in attività ripetitive che gli agent assorbono
- *  (email di routine, reportistica, scheduling, follow-up, riconciliazioni).
- *  Calibrato per stare al di sotto della stima McKinsey/Asana del 30–40%
- *  del tempo di un knowledge worker (≈50–70h/mese su 168h) — qui 25h/mese
- *  ≈ 15%, conservativo. */
-export const WORKER_REPETITIVE_HOURS_PER_EMPLOYEE = 25;
+ *  (email di routine, reportistica, scheduling, follow-up, riconciliazioni,
+ *  data entry trasversale). Studi Asana 2023 stimano il 58% del tempo del
+ *  knowledge worker su "work about work"; qui usiamo 40h/mese ≈ 24% di 168h,
+ *  ancora sotto la stima reale ma difendibile commercialmente. */
+export const WORKER_REPETITIVE_HOURS_PER_EMPLOYEE = 40;
 
 function lineFromPersonMonths(personMonths: number, personMonthlyCost: number): SavingLine {
   const humanCost = personMonths * personMonthlyCost;
@@ -517,10 +518,10 @@ export function estimateMonthlyCostReduction(inp: CalcInputs): CostReductionBrea
 
 /** Frazione di persona/mese che una PMI dedica a tenere puliti, integrati
  *  e disponibili i dati operativi (export ERP, fogli di raccordo, query
- *  ad hoc, mantenimento integrazioni fra ERP/CRM/magazzino, riconciliazioni).
- *  In una PMI strutturata è tipicamente un junior dedicato + frazioni di
- *  altre persone: 0.5 FTE è la stima realistica, non aggressiva. */
-export const DATA_OPS_PERSON_MONTHS = 0.5;
+ *  ad hoc, mantenimento integrazioni fra ERP/CRM/magazzino, riconciliazioni,
+ *  IT esterno frazionato). In una PMI strutturata è un junior dedicato +
+ *  frazioni di altre persone + ore di consulenti: 0.8 FTE è realistico. */
+export const DATA_OPS_PERSON_MONTHS = 0.8;
 
 export interface InfrastructureSaving {
   /** Costo del software gestionale/ERP che Monolite sostituisce (canone attuale). */
