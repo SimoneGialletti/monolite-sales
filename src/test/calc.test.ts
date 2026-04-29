@@ -1,8 +1,10 @@
 import { describe, it, expect } from "vitest";
 import {
   AGENT_COST_RATIO,
+  DATA_OPS_PERSON_MONTHS,
   defaultInputs,
   estimateMonthlyCostReduction,
+  estimateMonthlyInfrastructureSaving,
   HOURS_PER_PERSON_MONTH,
   SUPPLIER_OPS_HOURS_PER_SUPPLIER,
   WAREHOUSE_OPS_HOURS_PER_ORDER,
@@ -49,5 +51,29 @@ describe("estimateMonthlyCostReduction — paradigma agent = 50% del costo perso
     const sum =
       r.primaNota.saving + r.suppliers.saving + r.warehouse.saving + r.workerHours.saving;
     expect(r.total).toBeCloseTo(sum, 6);
+  });
+});
+
+describe("estimateMonthlyInfrastructureSaving — guadagno certo da Monolite", () => {
+  it("dataOps usa DATA_OPS_PERSON_MONTHS al costo persona/mese", () => {
+    const r = estimateMonthlyInfrastructureSaving(defaultInputs, 500);
+    expect(r.dataOps.personMonths).toBe(DATA_OPS_PERSON_MONTHS);
+    expect(r.dataOps.humanCost).toBeCloseTo(
+      DATA_OPS_PERSON_MONTHS * defaultInputs.monthlyFullyLoadedCost,
+      6
+    );
+    expect(r.dataOps.agentCost).toBeCloseTo(
+      r.dataOps.humanCost * AGENT_COST_RATIO,
+      6
+    );
+  });
+
+  it("saving = todayCost − monoliteFee, todayCost = legacyErp + dataOps.humanCost", () => {
+    const monoliteFee = 500;
+    const r = estimateMonthlyInfrastructureSaving(defaultInputs, monoliteFee);
+    expect(r.legacyErp).toBe(defaultInputs.currentErpMonthlyCost);
+    expect(r.todayCost).toBeCloseTo(r.legacyErp + r.dataOps.humanCost, 6);
+    expect(r.saving).toBeCloseTo(r.todayCost - monoliteFee, 6);
+    expect(r.monoliteFee).toBe(monoliteFee);
   });
 });

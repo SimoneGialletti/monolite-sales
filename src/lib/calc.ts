@@ -501,6 +501,53 @@ export function estimateMonthlyCostReduction(inp: CalcInputs): CostReductionBrea
   return { primaNota, suppliers, warehouse, workerHours, total };
 }
 
+// ---------------------------------------------------------------------------
+// Infrastruttura e dati privati — il "guadagno certo" di base che la PMI
+// ottiene passando a Monolite, indipendentemente dagli agent. Sostituisce il
+// gestionale legacy e la frazione di persona che oggi tiene insieme i dati
+// (export, integrazioni, fogli di raccordo). I dati restano di proprietà
+// dell'azienda, in clean data room: l'AI lavora in modo ottimale e privato.
+// ---------------------------------------------------------------------------
+
+/** Frazione di persona/mese che una PMI dedica a tenere puliti, integrati
+ *  e disponibili i dati operativi (export ERP, fogli di raccordo, query
+ *  ad hoc, mantenimento integrazioni). Default conservativo: 0.25 → ~40
+ *  ore/mese su una persona dedicata, o frazioni distribuite su più persone. */
+export const DATA_OPS_PERSON_MONTHS = 0.25;
+
+export interface InfrastructureSaving {
+  /** Costo del software gestionale/ERP che Monolite sostituisce (canone attuale). */
+  legacyErp: number;
+  /** Costo della frazione di persona che oggi tiene insieme i dati. */
+  dataOps: SavingLine;
+  /** Canone Monolite mensile (fisso + eventuale accesso studio). */
+  monoliteFee: number;
+  /** Costo umano totale di oggi (legacyErp + dataOps.humanCost). */
+  todayCost: number;
+  /** Risparmio mensile = todayCost − monoliteFee. Può essere negativo se la
+   *  PMI partiva senza ERP e senza data-ops (raro nei nostri target). */
+  saving: number;
+}
+
+export function estimateMonthlyInfrastructureSaving(
+  inp: CalcInputs,
+  monoliteFee: number
+): InfrastructureSaving {
+  const legacyErp = inp.currentErpMonthlyCost;
+  const dataOps = lineFromPersonMonths(
+    DATA_OPS_PERSON_MONTHS,
+    inp.monthlyFullyLoadedCost
+  );
+  const todayCost = legacyErp + dataOps.humanCost;
+  return {
+    legacyErp,
+    dataOps,
+    monoliteFee,
+    todayCost,
+    saving: todayCost - monoliteFee,
+  };
+}
+
 /**
  * Risolvi il livello di fatturato annuo a cui il valore netto mensile
  * passa per zero, tenendo fissi gli altri input.

@@ -3,12 +3,12 @@ import {
   AGENT_COST_RATIO,
   CalcInputs,
   compute,
+  DATA_OPS_PERSON_MONTHS,
   estimateMonthlyCostReduction,
-  estimateMonthlyUplift,
+  estimateMonthlyInfrastructureSaving,
   fmtEur,
   resolvePlan,
   SavingLine,
-  UPLIFT_RATE,
 } from "@/lib/calc";
 
 interface ResultViewProps {
@@ -17,31 +17,29 @@ interface ResultViewProps {
 }
 
 /**
- * Risultato del wizard PMI — "ti costa X, ti torna Y" in tre carte:
+ * Risultato del wizard PMI — due guadagni certi e una sezione di prezzo:
  *
  *   1. Il pitch — riga editoriale, una frase.
- *   2. Cosa ottieni — risparmio garantito + crescita potenziale + barra net.
+ *   2. Cosa ottieni — due card di guadagno certo:
+ *        a) Monolite, infrastruttura e dati privati (dismetti ERP + data ops)
+ *        b) Agent (4 voci: prima nota, fornitori, magazzino, ore lavoratori)
  *   3. Perché costa così — voci di prezzo riconciliate con il modello.
  *
- * Numero a sinistra, cifra a destra. Bordi, non ombre. Reckless sui numeri.
+ * Niente più "potenziale" — entrambe le card mostrano denaro che la PMI
+ * smetterà di spendere il giorno in cui passa a Monolite.
  */
 export const ResultView = ({ inputs, outputs }: ResultViewProps) => {
-  const uplift = estimateMonthlyUplift(inputs);
-  const savings = estimateMonthlyCostReduction(inputs);
-  const upside = uplift + savings.total;
+  const agents = estimateMonthlyCostReduction(inputs);
 
   const fixedCost = outputs.monthlyCanone + outputs.monthlyStudioFee;
   const variableCost = outputs.monthlyTokenRevenue + outputs.monthlyMarketplaceFee;
 
-  // Regola di prodotto: Monolite non si prende mai più del 30% del valore
-  // potenziale che genera. Sopra quella soglia tagliamo i fee variabili.
-  const POTENTIAL_TAKE_RATE_CAP = 0.3;
-  const cappedVariable = Math.min(variableCost, uplift * POTENTIAL_TAKE_RATE_CAP);
-  const capApplied = variableCost > uplift * POTENTIAL_TAKE_RATE_CAP;
+  const infra = estimateMonthlyInfrastructureSaving(inputs, fixedCost);
 
-  const netValue = uplift + savings.total - fixedCost - cappedVariable;
+  const totalSaving = infra.saving + agents.total;
+  const netValue = totalSaving - variableCost;
   const netPositive = netValue >= 0;
-  const displayedTotalCost = fixedCost + cappedVariable;
+  const displayedTotalCost = fixedCost + variableCost;
 
   const plan = resolvePlan(inputs);
   const [openCard, setOpenCard] = useState<"pitch" | "get" | "why">("pitch");
@@ -54,7 +52,7 @@ export const ResultView = ({ inputs, outputs }: ResultViewProps) => {
         eyebrowColor="var(--fg3)"
         summary={
           <span className="text-[12px] font-mono tabular text-[var(--fg3)]">
-            {fmtEur(fixedCost)} → +{fmtEur(upside)}
+            {fmtEur(fixedCost)} → +{fmtEur(totalSaving)}
           </span>
         }
         open={openCard === "pitch"}
@@ -65,19 +63,20 @@ export const ResultView = ({ inputs, outputs }: ResultViewProps) => {
           <span className="font-display font-normal text-[var(--fg1)] tabular">
             {fmtEur(fixedCost)}
           </span>
-          /mese sblocchi{" "}
+          /mese smetti di spendere{" "}
           <span
             className="font-display font-normal tabular"
             style={{ color: "var(--positive)" }}
           >
-            +{fmtEur(upside)}
+            +{fmtEur(totalSaving)}
           </span>
-          /mese tra risparmio sull'attuale gestione e crescita potenziale.
+          /mese tra infrastruttura, dati e attività che oggi paghi a persone.
         </p>
         <p className="mt-4 text-[12px] text-[var(--fg-muted)] leading-relaxed max-w-2xl">
           Il canone Monolite{outputs.monthlyStudioFee > 0 ? " + accesso dello studio in clean data room" : ""}.
-          I costi variabili — token agenti e marketplace di terzi — scalano solo
-          quando gli agenti lavorano davvero per te.
+          Due guadagni certi: l'infrastruttura che dismetti e gli agent che
+          fanno lavoro a metà del costo persona — i dati restano tuoi, in
+          clean data room, e l'AI lavora sopra solo i tuoi dati.
         </p>
       </Card>
 
@@ -90,23 +89,72 @@ export const ResultView = ({ inputs, outputs }: ResultViewProps) => {
             className="text-[14px] font-display font-normal tabular"
             style={{ color: "var(--positive)" }}
           >
-            +{fmtEur(upside)}
+            +{fmtEur(totalSaving)}
           </span>
         }
         open={openCard === "get"}
         onToggle={() => setOpenCard("get")}
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Risparmio garantito */}
+          {/* Card 1 — Monolite, infrastruttura e dati privati */}
+          <SubCard color="var(--positive)" tint="var(--positive-soft)">
+            <p className="eyebrow" style={{ color: "var(--positive)" }}>
+              Monolite · Infrastruttura e dati privati
+            </p>
+            <p
+              className="number leading-none text-[40px] md:text-[56px] mt-3"
+              style={{ color: "var(--positive)" }}
+            >
+              {infra.saving >= 0 ? "+" : ""}
+              {fmtEur(infra.saving)}
+            </p>
+            <p className="mt-2 text-[12px] text-[var(--fg3)]">
+              Smetti di pagare gestionale legacy e la persona che oggi tiene
+              insieme i dati. I dati restano di proprietà dell'azienda, in
+              clean data room — l'AI lavora sopra solo i tuoi, in modo ottimale
+              e privato.
+            </p>
+
+            <ul className="mt-5 space-y-3 text-[13px] text-[var(--fg1)]">
+              <SimpleLine
+                title="Gestionale/ERP attuale"
+                detail="Il software che usi oggi — canone che dismetti."
+                amount={infra.legacyErp}
+              />
+              <Benefit
+                title="Persona che gestisce e integra i dati"
+                detail="Export, fogli di raccordo, query ad hoc, integrazioni: tutto ciò che oggi tiene in piedi il dato operativo."
+                line={infra.dataOps}
+              />
+              <SimpleLine
+                title="Dati privati e proprietà aziendale"
+                detail="Clean data room, isolamento dei dati per cliente, nessun training su dati altrui — incluso nel canone."
+              />
+            </ul>
+
+            <CostFooter
+              label="Canone Monolite"
+              detail={
+                outputs.monthlyStudioFee > 0
+                  ? "Canone fisso + accesso studio"
+                  : "Canone fisso mensile"
+              }
+              amount={infra.monoliteFee}
+              valueAmount={infra.todayCost}
+              accent="var(--positive)"
+            />
+          </SubCard>
+
+          {/* Card 2 — Agent */}
           <SubCard color="var(--mono-sand)" tint="var(--mono-accent-soft)">
             <p className="eyebrow" style={{ color: "var(--mono-sand)" }}>
-              Risparmio garantito
+              Agent · Lavoro a metà del costo persona
             </p>
             <p
               className="number leading-none text-[40px] md:text-[56px] mt-3"
               style={{ color: "var(--mono-sand)" }}
             >
-              +{fmtEur(savings.total)}
+              +{fmtEur(agents.total)}
             </p>
             <p className="mt-2 text-[12px] text-[var(--fg3)]">
               Per ogni attività, l'agent costa il {Math.round((1 - AGENT_COST_RATIO) * 100)}% del
@@ -118,75 +166,24 @@ export const ResultView = ({ inputs, outputs }: ResultViewProps) => {
               <Benefit
                 title="Agent prima nota"
                 detail="Registrazioni, quadrature e prima nota a metà del costo persona/mese, in tempo reale, senza errori di trascrizione."
-                line={savings.primaNota}
+                line={agents.primaNota}
               />
               <Benefit
                 title="Agent fornitori"
                 detail="Listini, ordini e follow-up scadenze a metà del costo persona/mese, più veloce delle email."
-                line={savings.suppliers}
+                line={agents.suppliers}
               />
               <Benefit
                 title="Agent magazzino"
                 detail="Movimenti, picking e controllo giacenze a metà del costo persona/mese, in tempo reale."
-                line={savings.warehouse}
+                line={agents.warehouse}
               />
               <Benefit
                 title="Agent ore lavoratori"
                 detail="Email ripetitive, reportistica, scheduling, follow-up — assorbiti a metà del costo persona/mese."
-                line={savings.workerHours}
+                line={agents.workerHours}
               />
             </ul>
-
-            <CostFooter
-              label="Canone Monolite"
-              detail={
-                outputs.monthlyStudioFee > 0
-                  ? "Canone fisso + accesso studio"
-                  : "Canone fisso mensile"
-              }
-              amount={fixedCost}
-              valueAmount={savings.total}
-              accent="var(--mono-sand)"
-            />
-          </SubCard>
-
-          {/* Crescita potenziale */}
-          <SubCard color="var(--positive)" tint="var(--positive-soft)">
-            <p className="eyebrow" style={{ color: "var(--positive)" }}>
-              Crescita potenziale
-            </p>
-            <p
-              className="number leading-none text-[40px] md:text-[56px] mt-3"
-              style={{ color: "var(--positive)" }}
-            >
-              +{fmtEur(uplift)}
-            </p>
-            <p className="mt-2 text-[12px] text-[var(--fg3)]">
-              Modellato come {Math.round(UPLIFT_RATE * 100)}% di leva sul fatturato annuo, distribuita su 12 mesi.
-            </p>
-
-            <ul className="mt-5 space-y-3 text-[13px] text-[var(--fg1)]">
-              <Benefit
-                title="Ore liberate, riallocate al business"
-                detail="Le persone fanno commerciale, prodotto, qualità — non più data entry."
-              />
-              <Benefit
-                title="Decisioni più rapide"
-                detail="Contabilità industriale chiusa in tempo reale: marginalità per commessa visibile sempre."
-              />
-              <Benefit
-                title="Marketplace di agenti specialistici"
-                detail="Sviluppatori e studi pubblicano agenti per settore: scegli quelli che ti servono."
-              />
-            </ul>
-
-            <CostFooter
-              label="Token e marketplace"
-              detail="Pay-per-use — paghi solo quando gli agenti lavorano"
-              amount={cappedVariable}
-              valueAmount={uplift}
-              accent="var(--positive)"
-            />
           </SubCard>
         </div>
 
@@ -205,18 +202,18 @@ export const ResultView = ({ inputs, outputs }: ResultViewProps) => {
 
           <div className="mt-6 space-y-4">
             <ValueVsCostBar
-              label="Crescita potenziale"
-              valueAmount={uplift}
-              costAmount={cappedVariable}
+              label="Infrastruttura e dati"
+              valueAmount={Math.max(infra.todayCost, 0)}
+              costAmount={infra.monoliteFee}
               accent="var(--positive)"
-              scale={Math.max(uplift, savings.total, 1)}
+              scale={Math.max(infra.todayCost, agents.total, 1)}
             />
             <ValueVsCostBar
-              label="Risparmio garantito"
-              valueAmount={savings.total}
-              costAmount={fixedCost}
+              label="Agent"
+              valueAmount={agents.total}
+              costAmount={variableCost}
               accent="var(--mono-sand)"
-              scale={Math.max(uplift, savings.total, 1)}
+              scale={Math.max(infra.todayCost, agents.total, 1)}
             />
           </div>
         </div>
@@ -251,35 +248,17 @@ export const ResultView = ({ inputs, outputs }: ResultViewProps) => {
           )}
           <PriceLine
             label="Token agenti (extra rispetto agli inclusi)"
-            amount={
-              capApplied && variableCost > 0
-                ? cappedVariable * (outputs.monthlyTokenRevenue / variableCost)
-                : outputs.monthlyTokenRevenue
-            }
+            amount={outputs.monthlyTokenRevenue}
             formula={`Consumo stimato ${fmtNumberCompact(
               outputs.monthlyTokensConsumed
             )} token, ${fmtNumberCompact(outputs.monthlyTokensIncluded)} inclusi nel piano`}
           />
           <PriceLine
             label="Marketplace agenti di terzi"
-            amount={
-              capApplied && variableCost > 0
-                ? cappedVariable * (outputs.monthlyMarketplaceFee / variableCost)
-                : outputs.monthlyMarketplaceFee
-            }
+            amount={outputs.monthlyMarketplaceFee}
             formula={`5% sui ricavi degli agenti pubblicati da sviluppatori esterni · quota terzi ${inputs.thirdPartyAgentShare}%`}
           />
         </div>
-
-        {capApplied && (
-          <p className="mt-5 text-[12px] text-[var(--fg3)] leading-relaxed max-w-2xl">
-            <span style={{ color: "var(--mono-spice)" }}>Il tetto del 30%.</span>{" "}
-            I costi variabili sopra sono pro-rata fino al cap: Monolite non
-            trattiene mai più del{" "}
-            {Math.round(POTENTIAL_TAKE_RATE_CAP * 100)}% del valore potenziale che
-            ti genera. Oltre quella soglia, i costi variabili sono azzerati.
-          </p>
-        )}
       </Card>
     </div>
   );
@@ -500,6 +479,35 @@ const CostFooter = ({
     </div>
   );
 };
+
+interface SimpleLineProps {
+  title: string;
+  detail: string;
+  /** Importo da mostrare a destra (se presente e > 0). */
+  amount?: number;
+}
+
+const SimpleLine = ({ title, detail, amount }: SimpleLineProps) => (
+  <li className="flex items-start gap-3">
+    <span
+      aria-hidden
+      className="mt-[8px] h-px w-3 shrink-0 bg-[color:var(--fg-muted)]"
+    />
+    <div className="min-w-0 flex-1">
+      <div className="flex items-baseline justify-between gap-3">
+        <p className="text-[var(--fg1)] leading-snug">{title}</p>
+        {amount !== undefined && amount > 0 && (
+          <p className="font-mono tabular text-[12px] text-[var(--fg2)] shrink-0">
+            {fmtEur(amount)}
+          </p>
+        )}
+      </div>
+      <p className="text-[12px] text-[var(--fg3)] mt-0.5 leading-snug">
+        {detail}
+      </p>
+    </div>
+  </li>
+);
 
 interface BenefitProps {
   title: string;
