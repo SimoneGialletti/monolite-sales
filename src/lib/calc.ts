@@ -138,9 +138,9 @@ export const defaultInputs: CalcInputs = {
   monthlyCommesse: 12,
   monthlyOrders: 350,
 
-  currentErpMonthlyCost: 950,
+  currentErpMonthlyCost: 1800,
   avgHourlyRate: 38,
-  monthlyFullyLoadedCost: 3500,
+  monthlyFullyLoadedCost: 4200,
 
   priceTier: "mid",
   thirdPartyAgentShare: 30,
@@ -455,13 +455,19 @@ export interface CostReductionBreakdown {
   total: number;
 }
 
-/** Ore mensili tipiche per la gestione fornitori/listini (per fornitore). */
-export const SUPPLIER_OPS_HOURS_PER_SUPPLIER = 0.4;
-/** Ore mensili tipiche per movimentazione/picking/controllo per ordine. */
-export const WAREHOUSE_OPS_HOURS_PER_ORDER = 0.1;
+/** Ore mensili tipiche per la gestione fornitori/listini (per fornitore).
+ *  Mix di fornitori passivi e attivi: listini, ordini, RDA, follow-up
+ *  scadenze, riconciliazioni. */
+export const SUPPLIER_OPS_HOURS_PER_SUPPLIER = 0.8;
+/** Ore mensili per ordine: movimenti, picking, controllo qualità,
+ *  riconciliazione bolle, gestione resi, inventario rolling. */
+export const WAREHOUSE_OPS_HOURS_PER_ORDER = 0.15;
 /** Ore mensili per dipendente in attività ripetitive che gli agent assorbono
- *  (email di routine, reportistica, scheduling, follow-up). */
-export const WORKER_REPETITIVE_HOURS_PER_EMPLOYEE = 8;
+ *  (email di routine, reportistica, scheduling, follow-up, riconciliazioni).
+ *  Calibrato per stare al di sotto della stima McKinsey/Asana del 30–40%
+ *  del tempo di un knowledge worker (≈50–70h/mese su 168h) — qui 25h/mese
+ *  ≈ 15%, conservativo. */
+export const WORKER_REPETITIVE_HOURS_PER_EMPLOYEE = 25;
 
 function lineFromPersonMonths(personMonths: number, personMonthlyCost: number): SavingLine {
   const humanCost = personMonths * personMonthlyCost;
@@ -511,9 +517,10 @@ export function estimateMonthlyCostReduction(inp: CalcInputs): CostReductionBrea
 
 /** Frazione di persona/mese che una PMI dedica a tenere puliti, integrati
  *  e disponibili i dati operativi (export ERP, fogli di raccordo, query
- *  ad hoc, mantenimento integrazioni). Default conservativo: 0.25 → ~40
- *  ore/mese su una persona dedicata, o frazioni distribuite su più persone. */
-export const DATA_OPS_PERSON_MONTHS = 0.25;
+ *  ad hoc, mantenimento integrazioni fra ERP/CRM/magazzino, riconciliazioni).
+ *  In una PMI strutturata è tipicamente un junior dedicato + frazioni di
+ *  altre persone: 0.5 FTE è la stima realistica, non aggressiva. */
+export const DATA_OPS_PERSON_MONTHS = 0.5;
 
 export interface InfrastructureSaving {
   /** Costo del software gestionale/ERP che Monolite sostituisce (canone attuale). */
