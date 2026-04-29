@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en" class="dark"><head><meta charset="utf-8"><title>Components · Badges & chips</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html,body{margin:0;background:var(--mono-bg);color:var(--mono-fg);font-family:var(--mono-font-sans);padding:28px 32px;font-size:13px}
+  .lab{font-family:var(--mono-font-mono);font-size:9.5px;letter-spacing:0.12em;text-transform:uppercase;color:var(--mono-fg-muted);margin-bottom:14px;display:flex;align-items:center;gap:10px}
+  .lab::after{content:"";flex:1;height:1px;background:var(--mono-border);opacity:.5}
+  .grid{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:24px}
+  .pill{display:inline-flex;align-items:center;gap:7px;padding:3px 11px;border:1px solid var(--mono-border);border-radius:999px;font-size:11px;line-height:1.4;color:var(--mono-fg-muted);letter-spacing:-0.003em;font-feature-settings:"tnum"}
+  .pill .dot{width:6px;height:6px;border-radius:999px;position:relative}
+  .pill .dot.live{background:var(--mono-live)}
+  .pill .dot.live::after{content:"";position:absolute;inset:-3px;border-radius:999px;background:var(--mono-live-soft);opacity:.6;animation:p 2.4s cubic-bezier(.2,.8,.2,1) infinite;z-index:-1}
+  @keyframes p{0%{transform:scale(.6);opacity:.6}100%{transform:scale(2.6);opacity:0}}
+  .pill .dot.idle{background:var(--mono-fg-muted)}
+  .pill .dot.fail{background:var(--mono-danger)}
+  .beta{background:transparent;border-color:oklch(0.78 0.16 80 / .35);color:var(--mono-warn);text-transform:uppercase;letter-spacing:.1em;font-weight:500;font-size:9.5px;padding:2px 8px;font-family:var(--mono-font-mono)}
+  .num{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 6px;background:var(--mono-fg);color:var(--mono-bg);font-size:10px;font-weight:600;border-radius:999px;font-feature-settings:"tnum"}
+  .num.danger{background:var(--mono-danger);color:#fff}
+  .mention{display:inline-flex;align-items:center;gap:6px;padding:2px 9px 2px 7px;border:1px solid var(--mono-border);border-radius:999px;font-size:11.5px;color:var(--mono-fg);letter-spacing:-0.003em;font-feature-settings:"ss01"}
+  .mention .ag{width:8px;height:8px;background:var(--mono-fg);border-radius:999px}
+  .mention .pj{width:8px;height:8px;border-radius:1px;background:linear-gradient(135deg,oklch(0.66 0.13 55) 0%,oklch(0.4 0.04 55) 100%)}
+  .mention .pj.b{background:linear-gradient(135deg,oklch(0.62 0.15 250) 0%,oklch(0.32 0.08 250) 100%)}
+  .kbd{font-family:var(--mono-font-mono);font-size:10px;padding:1.5px 6px;background:rgb(255 255 255 / .06);border:1px solid var(--mono-border);letter-spacing:0;color:var(--mono-fg-muted)}
+</style></head>
+<body>
+  <div class="lab">Status</div>
+  <div class="grid">
+    <span class="pill"><span class="dot live"></span>Running · 02:14</span>
+    <span class="pill"><span class="dot idle"></span>Idle</span>
+    <span class="pill"><span class="dot fail"></span>Failed · 1 retry</span>
+    <span class="pill beta">Beta</span>
+  </div>
+  <div class="lab">Counts</div>
+  <div class="grid">
+    <span class="num">3</span>
+    <span class="num">12</span>
+    <span class="num danger">147</span>
+  </div>
+  <div class="lab">Mentions</div>
+  <div class="grid">
+    <span class="mention"><span class="pj"></span>Studio Adriatica</span>
+    <span class="mention"><span class="pj b"></span>Acme Holdings</span>
+    <span class="mention"><span class="ag"></span>billing-monthly</span>
+    <span class="mention"><span class="ag"></span>vat-ledger</span>
+  </div>
+  <div class="lab">Keys</div>
+  <div class="grid">
+    <span class="kbd">⌘</span><span class="kbd">K</span><span class="kbd">⇧⏎</span>
+  </div>
+</body></html>

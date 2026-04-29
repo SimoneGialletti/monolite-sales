@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en" class="dark"><head><meta charset="utf-8"><title>Brand · Logo</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html,body{margin:0;background:var(--mono-bg);color:var(--mono-fg);font-family:var(--mono-font-sans)}
+  .doc{padding:48px 56px}
+  .masthead{display:flex;align-items:baseline;gap:20px;padding-bottom:18px;margin-bottom:48px;border-bottom:1px solid var(--mono-border)}
+  .masthead .vol{font-family:var(--mono-font-mono);font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:var(--mono-fg-muted)}
+  .masthead h1{margin:0;font-family:var(--mono-font-display);font-size:42px;font-weight:300;letter-spacing:-0.03em;line-height:1}
+  .masthead h1 em{color:var(--mono-fg-muted);font-style:italic;font-weight:300}
+  .masthead .rule{flex:1;height:1px;background:var(--mono-border);margin:0 12px}
+  .masthead .meta{font-family:var(--mono-font-mono);font-size:11px;letter-spacing:0.14em;color:var(--mono-fg-muted)}
+
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1px solid var(--mono-border)}
+  .cell{aspect-ratio:1.2;display:flex;flex-direction:column;position:relative;overflow:hidden;border-right:1px solid var(--mono-border)}
+  .cell:last-child{border-right:0}
+  .cell-stage{flex:1;display:flex;align-items:center;justify-content:center;position:relative}
+  .cell-foot{padding:14px 18px;border-top:1px solid var(--mono-border);display:flex;justify-content:space-between;font-family:var(--mono-font-mono);font-size:10px;letter-spacing:0.12em;color:var(--mono-fg-muted);text-transform:uppercase}
+
+  .lockup{display:flex;align-items:center;gap:14px}
+  .lockup img{height:38px;width:auto}
+  .lockup .wm{font-family:var(--mono-font-display);font-size:32px;font-weight:300;letter-spacing:-0.035em;line-height:1}
+
+  /* Cell A — primary on stone */
+  .cell-a{background:#0a0a0a}
+  .cell-a .wm{color:#f5f1e8}
+  .cell-a .lockup img{filter:none}
+
+  /* Cell B — paper inverse */
+  .cell-b{background:#f5f1e8}
+  .cell-b .wm{color:#0e0e0e}
+  .cell-b .lockup img{filter:invert(1)}
+
+  /* Cell C — editorial wash */
+  .cell-c{background:#0a0a0a;position:relative;overflow:hidden}
+  .cell-c::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse 70% 60% at 65% 35%, oklch(0.66 0.13 55 / .35) 0%, transparent 70%)}
+  .cell-c::after{content:"";position:absolute;inset:0;background-image:linear-gradient(to right, oklch(1 0 0 / .03) 1px, transparent 1px);background-size:calc(100% / 12) 100%}
+  .cell-c .stage-inner{position:relative;z-index:2}
+  .cell-c .wm{color:#f5f1e8}
+
+  /* Construction sheet */
+  .sheet{margin-top:48px;border:1px solid var(--mono-border);display:grid;grid-template-columns:1.3fr 1fr;gap:0}
+  .sheet-l{padding:48px;background:#fafafa;display:flex;align-items:center;justify-content:center;border-right:1px solid var(--mono-border);position:relative}
+  .sheet-l svg{width:380px;height:auto}
+  .sheet-r{padding:40px 44px;display:flex;flex-direction:column;gap:32px}
+  .sheet-r h2{margin:0;font-family:var(--mono-font-display);font-size:32px;font-weight:400;letter-spacing:-0.022em;line-height:1.05}
+  .sheet-r h2 em{color:var(--mono-fg-muted);font-style:italic;font-weight:300}
+  .specs{display:grid;grid-template-columns:1fr 1fr;gap:20px 32px}
+  .spec{display:flex;flex-direction:column;gap:4px}
+  .spec .k{font-family:var(--mono-font-mono);font-size:9.5px;letter-spacing:0.16em;text-transform:uppercase;color:var(--mono-fg-muted)}
+  .spec .v{font-family:var(--mono-font-display);font-size:22px;font-weight:400;letter-spacing:-0.018em;line-height:1.1}
+
+  .quiet{margin-top:48px;display:flex;justify-content:space-between;align-items:baseline;font-family:var(--mono-font-mono);font-size:10px;letter-spacing:0.14em;color:var(--mono-fg-muted);text-transform:uppercase;padding-top:18px;border-top:1px solid var(--mono-border)}
+</style></head>
+<body>
+<div class="doc">
+
+  <div class="masthead">
+    <span class="vol">§ 01 · Brand</span>
+    <h1>Logo, <em>used sparingly.</em></h1>
+    <span class="rule"></span>
+    <span class="meta">Spec sheet · Apr 2026</span>
+  </div>
+
+  <div class="grid">
+
+    <div class="cell cell-a">
+      <div class="cell-stage">
+        <div class="lockup">
+          <img src="../assets/icon-monolite-white.svg" alt="">
+          <span class="wm">monolite</span>
+        </div>
+      </div>
+      <div class="cell-foot" style="background:#0a0a0a;color:oklch(0.55 0 0);border-top-color:oklch(0.985 0 0 / .14)"><span>A · Primary</span><span>Stone #0A0A0A</span></div>
+    </div>
+
+    <div class="cell cell-b">
+      <div class="cell-stage">
+        <div class="lockup">
+          <img src="../assets/icon-monolite-white.svg" alt="">
+          <span class="wm">monolite</span>
+        </div>
+      </div>
+      <div class="cell-foot" style="background:#f5f1e8;color:#7a7a7a;border-top-color:#e0d8c4"><span>B · Paper inverse</span><span>Paper #F5F1E8</span></div>
+    </div>
+
+    <div class="cell cell-c">
+      <div class="cell-stage">
+        <div class="stage-inner lockup">
+          <img src="../assets/icon-monolite-white.svg" alt="">
+          <span class="wm">monolite</span>
+        </div>
+      </div>
+      <div class="cell-foot" style="background:#0a0a0a;color:oklch(0.55 0.05 55);border-top-color:oklch(0.985 0 0 / .14)"><span>C · Editorial wash</span><span>Spice radial · marketing only</span></div>
+    </div>
+
+  </div>
+
+  <!-- Construction sheet -->
+  <div class="sheet">
+    <div class="sheet-l">
+      <svg viewBox="0 0 380 220" xmlns="http://www.w3.org/2000/svg">
+        <!-- baseline + cap guides -->
+        <line x1="20" y1="160" x2="360" y2="160" stroke="#d8d2c2" stroke-width="0.5" stroke-dasharray="4 4"/>
+        <line x1="20" y1="80" x2="360" y2="80" stroke="#d8d2c2" stroke-width="0.5" stroke-dasharray="4 4"/>
+        <line x1="20" y1="55" x2="360" y2="55" stroke="#d8d2c2" stroke-width="0.5" stroke-dasharray="4 4"/>
+        <!-- icon box -->
+        <rect x="34" y="55" width="80" height="105" fill="none" stroke="#a8a094" stroke-width="0.5"/>
+        <!-- icon glyph (a vertical monolith) -->
+        <rect x="58" y="65" width="32" height="86" fill="#0e0e0e"/>
+        <rect x="65" y="74" width="18" height="68" fill="#f5f1e8"/>
+        <!-- wordmark, in actual brand serif -->
+        <text x="134" y="135" font-family="Reckless, Georgia, serif" font-size="58" font-weight="300" letter-spacing="-2" fill="#0e0e0e">monolite</text>
+        <!-- micro labels -->
+        <text x="34" y="50" font-family="JetBrains Mono, monospace" font-size="8" letter-spacing="1.4" fill="#7a7a7a">CAP</text>
+        <text x="34" y="180" font-family="JetBrains Mono, monospace" font-size="8" letter-spacing="1.4" fill="#7a7a7a">BASELINE 160</text>
+        <text x="200" y="50" font-family="JetBrains Mono, monospace" font-size="8" letter-spacing="1.4" fill="#7a7a7a">X-HEIGHT 80</text>
+        <!-- spacing tick -->
+        <line x1="114" y1="100" x2="134" y2="100" stroke="#a35433" stroke-width="0.7"/>
+        <text x="115" y="92" font-family="JetBrains Mono, monospace" font-size="8" fill="#a35433">1m</text>
+      </svg>
+    </div>
+    <div class="sheet-r">
+      <h2>One module.<br><em>Everything else, derived.</em></h2>
+      <p style="margin:0;font-size:14px;line-height:1.6;color:var(--mono-fg-muted);max-width:38ch">The mark is built on a single module — <span style="color:var(--mono-fg)">m</span> — equal to the icon's stroke width. Letterspacing, gap, padding, lockup proportions all derive from it.</p>
+      <div class="specs">
+        <div class="spec"><span class="k">Mark height</span><span class="v">38<span style="font-family:var(--mono-font-sans);font-size:13px;color:var(--mono-fg-muted);margin-left:4px">px @1×</span></span></div>
+        <div class="spec"><span class="k">Wordmark size</span><span class="v">32 / 1.115×</span></div>
+        <div class="spec"><span class="k">Tracking</span><span class="v">−0.035 em</span></div>
+        <div class="spec"><span class="k">Lockup gap</span><span class="v">14px · ½ m</span></div>
+        <div class="spec"><span class="k">Clear space</span><span class="v">1m all sides</span></div>
+        <div class="spec"><span class="k">Min size</span><span class="v">14px height</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="quiet">
+    <span>Don't outline · Don't recolor · Don't compress vertically</span>
+    <span>Trademark · Monolite SRL · IT13452680960</span>
+  </div>
+
+</div>
+</body></html>

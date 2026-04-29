@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en" class="dark"><head><meta charset="utf-8"><title>Colors · Semantic accents</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html,body{margin:0;background:var(--mono-bg);color:var(--mono-fg);font-family:var(--mono-font-sans);font-size:12px}
+  .row{display:flex;gap:0;padding:18px;height:114px;align-items:stretch}
+  .card{flex:1;border:1px solid var(--mono-border);background:var(--mono-surface);padding:14px;display:flex;flex-direction:column;justify-content:space-between}
+  .card+.card{border-left:none}
+  .top{display:flex;align-items:center;gap:8px}
+  .dot{width:10px;height:10px;border-radius:999px}
+  .dot.live{background:var(--mono-live)}
+  .dot.danger{background:var(--mono-danger)}
+  .dot.warn{background:var(--mono-warn)}
+  .lbl{font-weight:600;font-size:13px}
+  .meaning{color:var(--mono-fg-muted);line-height:1.4}
+  .val{font-family:var(--mono-font-mono);color:var(--mono-fg-muted);font-size:10px}
+  .pulse{position:relative;width:10px;height:10px}
+  .pulse::after{content:"";position:absolute;inset:0;border-radius:999px;background:var(--mono-live-soft);opacity:.7;animation:p 1.6s var(--mono-ease-out) infinite}
+  @keyframes p{0%{transform:scale(.6);opacity:.7}100%{transform:scale(2.2);opacity:0}}
+</style></head>
+<body>
+<div class="row">
+  <div class="card"><div class="top"><span class="pulse"><span class="dot live"></span></span><span class="lbl">Live</span></div>
+    <div class="meaning">An agent is running. The only motion in the product UI.</div>
+    <div class="val">--mono-live</div></div>
+  <div class="card"><div class="top"><span class="dot danger"></span><span class="lbl">Attention</span></div>
+    <div class="meaning">Unread inbox · failed run · destructive action.</div>
+    <div class="val">--mono-danger</div></div>
+  <div class="card"><div class="top"><span class="dot warn"></span><span class="lbl">Beta</span></div>
+    <div class="meaning">Feature flag tag (Routines, etc).</div>
+    <div class="val">--mono-warn</div></div>
+</div>
+</body></html>

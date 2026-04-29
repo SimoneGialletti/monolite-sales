@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en" class="dark"><head><meta charset="utf-8"><title>Components · Buttons</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html,body{margin:0;background:var(--mono-bg);color:var(--mono-fg);font-family:var(--mono-font-sans);padding:28px 32px;font-feature-settings:"ss01","cv11";}
+  .lab{font-family:var(--mono-font-mono);font-size:9.5px;letter-spacing:0.12em;text-transform:uppercase;color:var(--mono-fg-muted);margin-bottom:14px;display:flex;align-items:center;gap:10px}
+  .lab::after{content:"";flex:1;height:1px;background:var(--mono-border);opacity:.5}
+  .group{margin-bottom:24px}
+  .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+  .btn{font:500 13px/1 var(--mono-font-sans);letter-spacing:-0.005em;padding:0 16px;height:34px;border:0;cursor:pointer;display:inline-flex;align-items:center;gap:8px;border-radius:0;transition:transform 220ms cubic-bezier(.2,.8,.2,1),background-color 220ms cubic-bezier(.2,.8,.2,1),box-shadow 220ms cubic-bezier(.2,.8,.2,1),color 220ms;white-space:nowrap;position:relative;overflow:hidden}
+  .btn:hover{transform:translateY(-1px)}
+  .btn:active{transform:translateY(0)}
+  .b-primary{background:var(--mono-fg);color:var(--mono-bg)}
+  .b-primary:hover{background:oklch(0.92 0 0);box-shadow:0 6px 20px -6px rgb(0 0 0 / 0.6)}
+  .b-secondary{background:var(--mono-secondary);color:var(--mono-fg)}
+  .b-secondary:hover{background:oklch(0.32 0 0)}
+  .b-outline{background:transparent;color:var(--mono-fg);border:1px solid var(--mono-border)}
+  .b-outline:hover{background:var(--mono-accent);border-color:oklch(0.4 0 0)}
+  .b-ghost{background:transparent;color:var(--mono-fg-muted)}
+  .b-ghost:hover{background:var(--mono-accent);color:var(--mono-fg)}
+  .b-destr{background:transparent;color:var(--mono-danger);border:1px solid oklch(0.55 0.18 25 / .35)}
+  .b-destr:hover{background:oklch(0.55 0.18 25 / .12);border-color:var(--mono-danger)}
+  .b-link{background:transparent;color:var(--mono-fg);padding:0;height:auto;border-bottom:1px solid var(--mono-border)}
+  .b-link:hover{border-color:var(--mono-fg);transform:none}
+  .sm{height:26px;padding:0 11px;font-size:11.5px}
+  .lg{height:42px;padding:0 22px;font-size:14px;letter-spacing:-0.008em}
+  .icon{width:14px;height:14px}
+  .kbd{font-family:var(--mono-font-mono);font-size:10px;padding:1px 5px;background:rgb(255 255 255 / .08);border:1px solid var(--mono-border);margin-left:6px;letter-spacing:0;opacity:.7}
+  .b-primary .kbd{background:rgb(0 0 0 / .2);border-color:rgb(0 0 0 / .3)}
+</style></head>
+<body>
+  <div class="group">
+    <div class="lab">Hierarchy</div>
+    <div class="row">
+      <button class="btn b-primary"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>New issue<span class="kbd">N</span></button>
+      <button class="btn b-secondary">Secondary</button>
+      <button class="btn b-outline">Outline</button>
+      <button class="btn b-ghost">Ghost</button>
+      <button class="btn b-destr">Delete instance</button>
+      <button class="btn b-link">Learn more →</button>
+    </div>
+  </div>
+  <div class="group">
+    <div class="lab">Sizes</div>
+    <div class="row">
+      <button class="btn b-primary lg">Continue</button>
+      <button class="btn b-primary">Continue</button>
+      <button class="btn b-primary sm">Continue</button>
+      <button class="btn b-outline sm">Cancel</button>
+    </div>
+  </div>
+</body></html>

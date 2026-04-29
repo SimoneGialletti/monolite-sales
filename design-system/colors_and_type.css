@@ -1,0 +1,308 @@
+/* ============================================================
+   Monolite — Colors & Type
+   Source of truth: SimoneGialletti/monolite-ai (ui/src/index.css)
+   Aesthetic: monolithic stone — Stonehenge / Giza / Mesoamerica.
+   Filmic reference: Dune (warm sand, cool obsidian, wide silence).
+   Mood reference: Notion (clarity), Linear (precision).
+   ============================================================ */
+
+/* ---------- Web fonts ----------
+   DISPLAY: Reckless Standard (TRIAL) — the brand's editorial serif, evoking
+   Dune's monolithic stillness. Used for H1/H2, marquee numbers, and display
+   moments. Ships locally from /fonts.
+   BODY:   System sans (Inter / SF / Segoe). The product UI deliberately
+   inherits the OS stack — fast, neutral, no shipped weight cost.
+   MONO:   JetBrains Mono (Google Fonts) for code, kbd, tabular numerics.
+   ============================================================ */
+@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap");
+
+@font-face {
+  font-family: "Reckless";
+  src: url("fonts/RecklessStandardM-TRIAL-Thin.woff2") format("woff2");
+  font-weight: 100; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: "Reckless";
+  src: url("fonts/RecklessStandardM-TRIAL-ThinItalic.woff2") format("woff2");
+  font-weight: 100; font-style: italic; font-display: swap;
+}
+@font-face {
+  font-family: "Reckless";
+  src: url("fonts/RecklessStandardM-TRIAL-Light.woff2") format("woff2");
+  font-weight: 300; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: "Reckless";
+  src: url("fonts/RecklessStandardM-TRIAL-LightItalic.woff2") format("woff2");
+  font-weight: 300; font-style: italic; font-display: swap;
+}
+@font-face {
+  font-family: "Reckless";
+  src: url("fonts/RecklessStandardM-TRIAL-Book.woff2") format("woff2");
+  font-weight: 350; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: "Reckless";
+  src: url("fonts/RecklessStandardM-TRIAL-BookItalic.woff2") format("woff2");
+  font-weight: 350; font-style: italic; font-display: swap;
+}
+@font-face {
+  font-family: "Reckless";
+  src: url("fonts/RecklessStandardM-TRIAL-Regular.woff2") format("woff2");
+  font-weight: 400; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: "Reckless";
+  src: url("fonts/RecklessStandardM-TRIAL-RegularItalic.woff2") format("woff2");
+  font-weight: 400; font-style: italic; font-display: swap;
+}
+@font-face {
+  font-family: "Reckless";
+  src: url("fonts/RecklessStandardM-TRIAL-Medium.woff2") format("woff2");
+  font-weight: 500; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: "Reckless";
+  src: url("fonts/RecklessStandardM-TRIAL-MediumItalic.woff2") format("woff2");
+  font-weight: 500; font-style: italic; font-display: swap;
+}
+@font-face {
+  font-family: "Reckless";
+  src: url("fonts/RecklessStandardM-TRIAL-SemiBold.woff2") format("woff2");
+  font-weight: 600; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: "Reckless";
+  src: url("fonts/RecklessStandardM-TRIAL-SemiBoldItalic.woff2") format("woff2");
+  font-weight: 600; font-style: italic; font-display: swap;
+}
+@font-face {
+  font-family: "Reckless";
+  src: url("fonts/RecklessStandardM-TRIAL-Bold.woff2") format("woff2");
+  font-weight: 700; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: "Reckless";
+  src: url("fonts/RecklessStandardM-TRIAL-BoldItalic.woff2") format("woff2");
+  font-weight: 700; font-style: italic; font-display: swap;
+}
+@font-face {
+  font-family: "Reckless";
+  src: url("fonts/RecklessStandardM-TRIAL-Heavy.woff2") format("woff2");
+  font-weight: 900; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: "Reckless";
+  src: url("fonts/RecklessStandardM-TRIAL-HeavyItalic.woff2") format("woff2");
+  font-weight: 900; font-style: italic; font-display: swap;
+}
+
+:root {
+  /* ============================================================
+     COLOR — neutral monolith.
+     The product is shadcn "neutral" with --radius:0. Pure greys,
+     no chroma. Two semantic accents: blue (live activity) and red
+     (alerts / unread).
+     ============================================================ */
+
+  /* Light theme (default) */
+  --mono-bg:            oklch(1 0 0);                /* page */
+  --mono-fg:            oklch(0.145 0 0);            /* primary text */
+  --mono-fg-muted:      oklch(0.556 0 0);            /* secondary text */
+  --mono-surface:       oklch(1 0 0);                /* card */
+  --mono-surface-2:     oklch(0.985 0 0);            /* sidebar / well */
+  --mono-secondary:     oklch(0.97 0 0);             /* secondary fill */
+  --mono-accent:        oklch(0.97 0 0);             /* hover fill */
+  --mono-border:        oklch(0.922 0 0);
+  --mono-input:         oklch(0.922 0 0);
+  --mono-ring:          oklch(0.708 0 0);
+  --mono-primary:       oklch(0.205 0 0);            /* button / pill */
+  --mono-primary-fg:    oklch(0.985 0 0);
+
+  /* Semantic accents */
+  --mono-live:          oklch(0.62 0.15 250);        /* blue-500 — heartbeats */
+  --mono-live-soft:     oklch(0.78 0.12 250);        /* blue-400 — pulse */
+  --mono-danger:        oklch(0.577 0.245 27.325);   /* red-500 — destructive */
+  --mono-warn:          oklch(0.78 0.16 80);         /* amber — beta tag */
+
+  /* Filmic / brand accent palette ("Dune" — used for marketing & decks
+     ONLY, not in product UI which is grayscale.) */
+  --mono-sand:          oklch(0.86 0.07 80);         /* warm sand */
+  --mono-spice:         oklch(0.66 0.13 55);         /* spice / terra */
+  --mono-stone:         oklch(0.55 0.02 60);         /* weathered stone */
+  --mono-obsidian:      oklch(0.16 0.01 260);        /* deep cool */
+  --mono-paper:         oklch(0.965 0.01 80);        /* warm paper */
+
+  /* Theme color (browser chrome) */
+  --mono-theme-color:   #ffffff;
+
+  /* ============================================================
+     ELEVATION & GEOMETRY
+     CRITICAL: --radius is 0. Monolite is monolithic — corners
+     are squared. Only chips and the company-rail tiles round.
+     ============================================================ */
+  --mono-radius:        0px;       /* base */
+  --mono-radius-sm:     0.375rem;  /* 6px — chips / kbd / inline code */
+  --mono-radius-md:     0.5rem;    /* 8px — popovers, tiles */
+  --mono-radius-pill:   999px;     /* mention chips, status dots */
+
+  /* Shadows are minimal — the product reads as a flat document. */
+  --mono-shadow-xs:     0 1px 0 0 rgb(0 0 0 / 0.04);
+  --mono-shadow-sm:     0 1px 2px rgb(0 0 0 / 0.06);
+  --mono-shadow-md:     0 4px 12px -2px rgb(0 0 0 / 0.08);
+  --mono-shadow-lg:     0 12px 32px -8px rgb(0 0 0 / 0.18);
+
+  /* Borders */
+  --mono-border-w:      1px;
+
+  /* Spacing scale (4px base) */
+  --mono-space-1:       4px;
+  --mono-space-2:       8px;
+  --mono-space-3:       12px;
+  --mono-space-4:       16px;
+  --mono-space-5:       20px;
+  --mono-space-6:       24px;
+  --mono-space-8:       32px;
+  --mono-space-10:      40px;
+  --mono-space-12:      48px;
+  --mono-space-16:      64px;
+
+  /* ============================================================
+     TYPE
+     DISPLAY  → Reckless Standard. Editorial serif with high contrast,
+                slim verticals, and quiet flares. The brand voice
+                in print: it carries the "monolithic, awe" register.
+                Use for H1/H2, marquee numbers, deck titles, hero copy.
+                Available weights: Thin (100), Light (300), Book (350),
+                Regular (400), Medium (500), SemiBold (600), Bold (700),
+                Heavy (900) — all with italics.
+     SANS     → System stack. The product UI inherits the OS sans
+                deliberately: fast, neutral, no shipped weight cost.
+                Use for body, UI chrome, dense data.
+     MONO     → JetBrains Mono. Code, kbd, tabular numerics, timestamps.
+
+     CASTING RULE: pair Reckless display with system-sans body. Never
+     set long-form body in Reckless — it's a display face.
+     ============================================================ */
+  --mono-font-sans:     ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --mono-font-mono:     "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --mono-font-display:  "Reckless", "Reckless Standard", Georgia, "Times New Roman", serif;
+  --mono-font-serif:    "Reckless", "Reckless Standard", Georgia, "Times New Roman", serif;
+
+  /* Type scale — built around the product's 13/14px sidebar + 15px body */
+  --mono-fs-xs:         11px;     /* meta / kbd */
+  --mono-fs-sm:         12px;     /* badges, table meta */
+  --mono-fs-13:         13px;     /* sidebar nav (canonical) */
+  --mono-fs-base:       14px;     /* body */
+  --mono-fs-15:         15px;     /* prose body */
+  --mono-fs-md:         16px;
+  --mono-fs-lg:         18px;
+  --mono-fs-xl:         20px;     /* page H1 */
+  --mono-fs-2xl:        24px;
+  --mono-fs-3xl:        30px;     /* deck title */
+  --mono-fs-4xl:        40px;
+  --mono-fs-5xl:        56px;     /* hero */
+  --mono-fs-6xl:        80px;     /* section opener */
+
+  --mono-lh-tight:      1.15;
+  --mono-lh-snug:       1.3;
+  --mono-lh-normal:     1.5;
+  --mono-lh-relaxed:    1.6;
+
+  --mono-tracking-tight: -0.02em;
+  --mono-tracking-wide:  0.06em;  /* uppercase page title */
+
+  /* Motion */
+  --mono-ease-out:      cubic-bezier(0.16, 1, 0.3, 1); /* the "monolite curve" */
+  --mono-ease-std:      cubic-bezier(0.2, 0, 0.2, 1);
+  --mono-dur-fast:      100ms;    /* sidebar collapse */
+  --mono-dur-base:      150ms;    /* most hovers */
+  --mono-dur-slow:      200ms;    /* dialog max-width */
+  --mono-dur-stage:     520ms;    /* activity row enter */
+}
+
+/* ---------- Dark theme (the product default) ---------- */
+.dark, [data-theme="dark"] {
+  --mono-bg:            oklch(0.145 0 0);     /* #18181b approx */
+  --mono-fg:            oklch(0.985 0 0);
+  --mono-fg-muted:      oklch(0.708 0 0);
+  --mono-surface:       oklch(0.205 0 0);     /* card */
+  --mono-surface-2:     oklch(0.145 0 0);     /* sidebar */
+  --mono-secondary:     oklch(0.269 0 0);
+  --mono-accent:        oklch(0.269 0 0);
+  --mono-border:        oklch(0.269 0 0);
+  --mono-input:         oklch(0.269 0 0);
+  --mono-ring:          oklch(0.439 0 0);
+  --mono-primary:       oklch(0.985 0 0);
+  --mono-primary-fg:    oklch(0.205 0 0);
+  --mono-danger:        oklch(0.637 0.237 25.331);
+  --mono-theme-color:   #18181b;
+
+  --mono-shadow-xs:     0 1px 0 0 rgb(0 0 0 / 0.4);
+  --mono-shadow-sm:     0 1px 2px rgb(0 0 0 / 0.5);
+  --mono-shadow-md:     0 4px 14px -2px rgb(0 0 0 / 0.55);
+  --mono-shadow-lg:     0 18px 40px -10px rgb(0 0 0 / 0.7);
+}
+
+/* =================================================================
+   SEMANTIC TYPE — apply directly to elements when not using utilities
+   ================================================================= */
+.mono-h1, h1.mono {
+  font-family: var(--mono-font-display);
+  font-size: var(--mono-fs-4xl);
+  line-height: var(--mono-lh-tight);
+  letter-spacing: var(--mono-tracking-tight);
+  /* Reckless reads best at 400 for display — let the serif do the work. */
+  font-weight: 400;
+  text-wrap: balance;
+}
+
+.mono-h2, h2.mono {
+  font-family: var(--mono-font-display);
+  font-size: var(--mono-fs-2xl);
+  line-height: var(--mono-lh-snug);
+  letter-spacing: var(--mono-tracking-tight);
+  font-weight: 400;
+  text-wrap: balance;
+}
+
+.mono-h3, h3.mono {
+  font-family: var(--mono-font-sans);
+  font-size: var(--mono-fs-lg);
+  line-height: var(--mono-lh-snug);
+  font-weight: 600;
+}
+
+.mono-page-title {
+  /* The product uses 14px / uppercase / 0.06em tracking for page H1 */
+  font-family: var(--mono-font-sans);
+  font-size: var(--mono-fs-base);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: var(--mono-tracking-wide);
+  color: var(--mono-fg);
+}
+
+.mono-body, p.mono {
+  font-family: var(--mono-font-sans);
+  font-size: var(--mono-fs-15);
+  line-height: var(--mono-lh-relaxed);
+  color: var(--mono-fg);
+}
+
+.mono-meta {
+  font-family: var(--mono-font-sans);
+  font-size: var(--mono-fs-sm);
+  color: var(--mono-fg-muted);
+}
+
+.mono-nav {
+  font-family: var(--mono-font-sans);
+  font-size: var(--mono-fs-13);
+  font-weight: 500;
+}
+
+.mono-code, code.mono, kbd.mono {
+  font-family: var(--mono-font-mono);
+  font-size: 0.95em;
+}

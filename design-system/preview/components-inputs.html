@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en" class="dark"><head><meta charset="utf-8"><title>Components · Form inputs</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html,body{margin:0;background:var(--mono-bg);color:var(--mono-fg);font-family:var(--mono-font-sans);padding:28px 32px;font-size:13px}
+  .field{display:flex;flex-direction:column;gap:6px;margin-bottom:18px;max-width:420px}
+  label{font-family:var(--mono-font-mono);font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--mono-fg-muted)}
+  .input{display:flex;align-items:center;gap:10px;background:transparent;border:0;border-bottom:1px solid var(--mono-border);padding:8px 2px;transition:border-color 240ms cubic-bezier(.2,.8,.2,1)}
+  .input:focus-within{border-color:var(--mono-fg)}
+  .input input,.input select{flex:1;background:transparent;color:var(--mono-fg);border:0;font:inherit;font-size:14px;outline:none;letter-spacing:-0.005em}
+  .input .hint{font-family:var(--mono-font-mono);font-size:10px;color:var(--mono-fg-muted);letter-spacing:0.04em}
+  .row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--mono-border);max-width:420px;margin-bottom:6px}
+  .row:last-child{border-bottom:0}
+  .row .k{font-size:13px;color:var(--mono-fg);letter-spacing:-0.005em}
+  .row .h{font-size:11px;color:var(--mono-fg-muted);margin-top:2px}
+  .switch{width:32px;height:18px;background:var(--mono-secondary);border-radius:999px;position:relative;flex-shrink:0;cursor:pointer;transition:background 240ms cubic-bezier(.2,.8,.2,1)}
+  .switch::after{content:"";position:absolute;top:2px;left:2px;width:14px;height:14px;background:var(--mono-fg);border-radius:999px;transition:transform 280ms cubic-bezier(.2,.8,.2,1),background 240ms}
+  .switch.on{background:var(--mono-fg)}
+  .switch.on::after{transform:translateX(14px);background:var(--mono-bg)}
+  .grp{display:flex;flex-direction:column;gap:2px}
+</style></head>
+<body>
+  <div class="field">
+    <label>Instance name</label>
+    <div class="input">
+      <input value="billing-monthly">
+      <span class="hint">⏎ to save</span>
+    </div>
+  </div>
+  <div class="field">
+    <label>Adapter</label>
+    <div class="input">
+      <select><option>claude-local</option><option>codex-local</option></select>
+    </div>
+  </div>
+  <div class="row">
+    <div class="grp"><span class="k">Auto-run on cron</span><span class="h">Triggers nightly at 02:00 Europe/Rome</span></div>
+    <div class="switch on"></div>
+  </div>
+  <div class="row">
+    <div class="grp"><span class="k">Notify on failure</span><span class="h">Email simone@studioadriatica.it</span></div>
+    <div class="switch on"></div>
+  </div>
+  <div class="row">
+    <div class="grp"><span class="k">Allow agent-to-agent calls</span><span class="h">Internal mentions only</span></div>
+    <div class="switch"></div>
+  </div>
+</body></html>

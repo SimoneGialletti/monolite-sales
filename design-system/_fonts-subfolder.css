@@ -1,0 +1,19 @@
+/* Subfolder font shim — overrides @font-face URLs with `../fonts/` so files
+   under /deck/ and /emails/ resolve Reckless correctly. Include AFTER
+   colors_and_type.css. */
+@font-face{font-family:"Reckless";src:url("../fonts/RecklessStandardM-TRIAL-Thin.woff2") format("woff2");font-weight:100;font-style:normal;font-display:swap}
+@font-face{font-family:"Reckless";src:url("../fonts/RecklessStandardM-TRIAL-ThinItalic.woff2") format("woff2");font-weight:100;font-style:italic;font-display:swap}
+@font-face{font-family:"Reckless";src:url("../fonts/RecklessStandardM-TRIAL-Light.woff2") format("woff2");font-weight:300;font-style:normal;font-display:swap}
+@font-face{font-family:"Reckless";src:url("../fonts/RecklessStandardM-TRIAL-LightItalic.woff2") format("woff2");font-weight:300;font-style:italic;font-display:swap}
+@font-face{font-family:"Reckless";src:url("../fonts/RecklessStandardM-TRIAL-Book.woff2") format("woff2");font-weight:350;font-style:normal;font-display:swap}
+@font-face{font-family:"Reckless";src:url("../fonts/RecklessStandardM-TRIAL-BookItalic.woff2") format("woff2");font-weight:350;font-style:italic;font-display:swap}
+@font-face{font-family:"Reckless";src:url("../fonts/RecklessStandardM-TRIAL-Regular.woff2") format("woff2");font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:"Reckless";src:url("../fonts/RecklessStandardM-TRIAL-RegularItalic.woff2") format("woff2");font-weight:400;font-style:italic;font-display:swap}
+@font-face{font-family:"Reckless";src:url("../fonts/RecklessStandardM-TRIAL-Medium.woff2") format("woff2");font-weight:500;font-style:normal;font-display:swap}
+@font-face{font-family:"Reckless";src:url("../fonts/RecklessStandardM-TRIAL-MediumItalic.woff2") format("woff2");font-weight:500;font-style:italic;font-display:swap}
+@font-face{font-family:"Reckless";src:url("../fonts/RecklessStandardM-TRIAL-SemiBold.woff2") format("woff2");font-weight:600;font-style:normal;font-display:swap}
+@font-face{font-family:"Reckless";src:url("../fonts/RecklessStandardM-TRIAL-SemiBoldItalic.woff2") format("woff2");font-weight:600;font-style:italic;font-display:swap}
+@font-face{font-family:"Reckless";src:url("../fonts/RecklessStandardM-TRIAL-Bold.woff2") format("woff2");font-weight:700;font-style:normal;font-display:swap}
+@font-face{font-family:"Reckless";src:url("../fonts/RecklessStandardM-TRIAL-BoldItalic.woff2") format("woff2");font-weight:700;font-style:italic;font-display:swap}
+@font-face{font-family:"Reckless";src:url("../fonts/RecklessStandardM-TRIAL-Heavy.woff2") format("woff2");font-weight:900;font-style:normal;font-display:swap}
+@font-face{font-family:"Reckless";src:url("../fonts/RecklessStandardM-TRIAL-HeavyItalic.woff2") format("woff2");font-weight:900;font-style:italic;font-display:swap}

@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en" class="dark"><head><meta charset="utf-8"><title>Radius · The monolithic rule</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html,body{margin:0;background:var(--mono-bg);color:var(--mono-fg);font-family:var(--mono-font-sans);padding:18px 20px}
+  .row{display:flex;gap:18px;align-items:flex-end}
+  .item{display:flex;flex-direction:column;gap:8px;align-items:center}
+  .box{width:80px;height:80px;background:var(--mono-surface);border:1px solid var(--mono-border)}
+  .lbl{font-family:var(--mono-font-mono);font-size:10px;color:var(--mono-fg-muted)}
+  .name{font-size:11px;font-weight:600}
+</style></head>
+<body>
+  <div class="row">
+    <div class="item"><div class="box"></div><div class="name">default</div><div class="lbl">0px</div></div>
+    <div class="item"><div class="box" style="border-radius:6px"></div><div class="name">chip</div><div class="lbl">6px</div></div>
+    <div class="item"><div class="box" style="border-radius:8px"></div><div class="name">popover</div><div class="lbl">8px</div></div>
+    <div class="item"><div class="box" style="border-radius:14px"></div><div class="name">tile · selected</div><div class="lbl">14px</div></div>
+    <div class="item"><div class="box" style="border-radius:22px"></div><div class="name">tile · resting</div><div class="lbl">22px</div></div>
+    <div class="item"><div class="box" style="border-radius:999px;width:80px;height:28px;align-self:center"></div><div class="name">pill</div><div class="lbl">999px</div></div>
+  </div>
+</body></html>

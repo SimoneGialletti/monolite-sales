@@ -1,0 +1,543 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ==========================================================================
+   MEUS Foundations 2030 — Spatial Editorial
+   Single accent (#FF4D00). Warm bone neutrals. Editorial soft shadows.
+   No gradients as decoration. No glow. Numbers in Clash Display, tabular.
+   ========================================================================== */
+
+/* -- Clash Display (display, brand, numbers) ----------------------------- */
+@font-face { font-family: 'Clash Display'; src: url('/fonts/ClashDisplay-Extralight.otf') format('opentype'); font-weight: 200; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Clash Display'; src: url('/fonts/ClashDisplay-Light.otf') format('opentype'); font-weight: 300; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Clash Display'; src: url('/fonts/ClashDisplay-Regular.otf') format('opentype'); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Clash Display'; src: url('/fonts/ClashDisplay-Medium.otf') format('opentype'); font-weight: 500; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Clash Display'; src: url('/fonts/ClashDisplay-Semibold.otf') format('opentype'); font-weight: 600; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Clash Display'; src: url('/fonts/ClashDisplay-Bold.otf') format('opentype'); font-weight: 700; font-style: normal; font-display: swap; }
+
+/* -- Geist + Geist Mono (body, ui, mono) --------------------------------- */
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap');
+
+/* ==========================================================================
+   TOKENS — Default = MEUS Cinema (dark, B2C-style premium surface)
+   The Partnership Calculator inherits the cinema surface to match brand
+   moments; flip to .theme-light on <html> for the B2B Bone surface.
+   ========================================================================== */
+@layer base {
+  :root {
+    /* Brand */
+    --meus-orange:        #FF4D00;
+    --meus-orange-hover:  #E64500;
+    --meus-orange-press:  #C73C00;
+    --meus-orange-soft:   #2A1508;
+    --meus-orange-ink:    #FFC1A0;
+
+    /* Brand green — used for revenue/gain accents on dark surfaces.
+       Distinct from --success (system status); this is editorial. */
+    --meus-green:         #2EE07A;
+    --meus-green-soft:    #0B2818;
+    --meus-green-ink:     #A7F2C8;
+
+    /* Brand gold — used for savings accents. Editorial, not status. */
+    --meus-gold:          #E8B547;
+    --meus-gold-soft:     #2A1F08;
+    --meus-gold-ink:      #F5DA9A;
+
+    /* Bone ladder (kept for reference / paper surface) */
+    --bone-0:    #FFFFFF;
+    --bone-50:   #FAFAF8;
+    --bone-100:  #F2F1EE;
+    --bone-150:  #E8E7E3;
+    --bone-200:  #DCDBD6;
+    --bone-300:  #C2C1BB;
+    --bone-400:  #97968F;
+    --bone-500:  #6B6A64;
+    --bone-600:  #46453F;
+    --bone-700:  #2D2C27;
+    --bone-800:  #1A1916;
+    --bone-900:  #0E0D0B;
+    --void:      #050504;
+
+    /* Foreground / Background ladder — Cinema (dark) */
+    --fg1:       #F5F4F1;
+    --fg2:       #B8B7B0;
+    --fg3:       #82817B;
+    --fg-muted:  #4F4E48;
+    --fg-inverse:#0E0D0B;
+
+    --bg-page:    #050504;
+    --bg-surface: #0E0D0B;
+    --bg-sunken:  #050504;
+    --bg-hover:   #181715;
+    --bg-active:  #221F1B;
+
+    --border-subtle:  #181715;
+    --border-default: #25221E;
+    --border-strong:  #34302A;
+
+    /* Status */
+    --success: #1F7A3A; --success-soft: #14241A;
+    --warning: #B8610A; --warning-soft: #2A1B0C;
+    --danger:  #B42318; --danger-soft:  #2A100F;
+
+    /* Radii */
+    --radius-xs: 4px;
+    --radius-sm: 6px;
+    --radius-md: 12px;
+    --radius-lg: 18px;
+    --radius-xl: 26px;
+    --radius-2xl: 36px;
+    --radius-full: 999px;
+    /* shadcn compatibility — Tailwind borderRadius reads var(--radius) */
+    --radius: 12px;
+
+    /* Editorial shadows — never glowy */
+    --shadow-xs:  0 1px 1px rgba(0,0,0,.4);
+    --shadow-sm:  0 1px 2px rgba(0,0,0,.5);
+    --shadow-md:  0 4px 14px rgba(0,0,0,.5);
+    --shadow-lg:  0 18px 44px rgba(0,0,0,.6);
+    --shadow-xl:  0 36px 88px rgba(0,0,0,.72);
+    --shadow-spatial: 0 1px 0 rgba(255,255,255,.04) inset, 0 28px 64px -24px rgba(0,0,0,.7), 0 4px 14px -6px rgba(0,0,0,.5);
+    --shadow-focus: 0 0 0 3px rgba(255,77,0,.28);
+    --shadow-inset: inset 0 0 0 1px var(--border-default);
+
+    /* Motion */
+    --ease-out:    cubic-bezier(0.2, 0.8, 0.2, 1);
+    --ease-in-out: cubic-bezier(0.6, 0.0, 0.2, 1);
+    --dur-fast: 140ms;
+    --dur-base: 220ms;
+    --dur-slow: 360ms;
+
+    /* Type families */
+    --font-display: 'Clash Display', 'Inter Tight', system-ui, sans-serif;
+    --font-body:    'Geist', 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --font-mono:    'Geist Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+    /* ─────────────────────────── Tailwind / shadcn tokens ───────────────────── */
+    /* These keep the existing Tailwind config working. Values realigned to DS. */
+    --background: 60 11% 2%;       /* void */
+    --foreground: 45 19% 95%;      /* fg1 */
+    --surface:    40 13% 5%;       /* bg-surface */
+    --surface-2:  40 9% 9%;        /* bg-hover */
+    --card:       40 13% 5%;
+    --card-foreground: 45 19% 95%;
+    --popover:    40 13% 5%;
+    --popover-foreground: 45 19% 95%;
+
+    --primary: 18 100% 50%;        /* meus-orange */
+    --primary-foreground: 0 0% 100%;
+    --primary-2: 18 100% 60%;
+    --primary-glow: 18 100% 50%;
+
+    --secondary: 40 9% 9%;
+    --secondary-foreground: 45 19% 95%;
+
+    --muted: 40 9% 9%;
+    --muted-foreground: 45 7% 70%;
+
+    --accent: 18 100% 50%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 5 78% 41%;      /* danger */
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 144 60% 30%;
+    --warning: 30 90% 38%;
+
+    --border: 34 10% 13%;          /* border-default */
+    --input:  34 10% 13%;
+    --ring:   18 100% 50%;
+
+    --text-dim:   45 7% 70%;       /* fg2 */
+    --text-muted: 45 4% 49%;       /* fg3 */
+  }
+
+  /* B2B Bone surface (light) — opt in by adding class="theme-light" on <html>. */
+  .theme-light {
+    --fg1:       #0E0D0B;
+    --fg2:       #46453F;
+    --fg3:       #6B6A64;
+    --fg-muted:  #97968F;
+    --fg-inverse:#FAFAF8;
+
+    --bg-page:    #FAFAF8;
+    --bg-surface: #FFFFFF;
+    --bg-sunken:  #F2F1EE;
+    --bg-hover:   #F2F1EE;
+    --bg-active:  #E8E7E3;
+
+    --border-subtle:  #E8E7E3;
+    --border-default: #DCDBD6;
+    --border-strong:  #C2C1BB;
+
+    --meus-orange-soft: #FFE9DE;
+    --meus-orange-ink:  #7A2500;
+
+    --shadow-xs: 0 1px 1px rgba(14,13,11,.04);
+    --shadow-sm: 0 1px 2px rgba(14,13,11,.06), 0 1px 1px rgba(14,13,11,.04);
+    --shadow-md: 0 4px 14px rgba(14,13,11,.06), 0 1px 2px rgba(14,13,11,.04);
+    --shadow-lg: 0 18px 44px rgba(14,13,11,.08), 0 2px 6px rgba(14,13,11,.04);
+    --shadow-xl: 0 36px 88px rgba(14,13,11,.13), 0 4px 12px rgba(14,13,11,.06);
+    --shadow-spatial: 0 1px 0 rgba(255,255,255,.5) inset, 0 28px 64px -24px rgba(14,13,11,.20), 0 4px 14px -6px rgba(14,13,11,.10);
+
+    --background: 50 14% 97%;
+    --foreground: 40 13% 5%;
+    --surface:    0 0% 100%;
+    --surface-2:  43 11% 94%;
+    --card:       0 0% 100%;
+    --card-foreground: 40 13% 5%;
+    --popover:    0 0% 100%;
+    --popover-foreground: 40 13% 5%;
+    --secondary:  43 11% 94%;
+    --secondary-foreground: 40 13% 5%;
+    --muted:      43 11% 94%;
+    --muted-foreground: 45 4% 49%;
+    --border: 38 9% 84%;
+    --input:  38 9% 84%;
+    --text-dim:   43 6% 32%;
+    --text-muted: 45 4% 49%;
+  }
+}
+
+@layer base {
+  * { @apply border-border; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-body);
+    font-size: 15px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-feature-settings: "ss01", "cv11";
+    text-rendering: optimizeLegibility;
+  }
+  ::selection { background: var(--meus-orange); color: #FFFFFF; }
+  :focus-visible { outline: none; box-shadow: var(--shadow-focus); border-radius: var(--radius-sm); }
+}
+
+/* ==========================================================================
+   SEMANTIC TYPE UTILITIES (DS spec)
+   ========================================================================== */
+@layer components {
+  .display, .h-display {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: clamp(56px, 8vw, 96px);
+    line-height: 1.0;
+    letter-spacing: -0.03em;
+    color: var(--fg1);
+    text-wrap: balance;
+  }
+  .h1 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 44px;
+    line-height: 1.12;
+    letter-spacing: -0.012em;
+    color: var(--fg1);
+    text-wrap: balance;
+  }
+  .h2 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 32px;
+    line-height: 1.12;
+    letter-spacing: -0.012em;
+    color: var(--fg1);
+    text-wrap: balance;
+  }
+  .h3 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 24px;
+    line-height: 1.28;
+    letter-spacing: -0.012em;
+    color: var(--fg1);
+  }
+  .h4 {
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 19px;
+    line-height: 1.28;
+    color: var(--fg1);
+  }
+
+  /* Eyebrow — small uppercase mono label, the DS replaces the old .section-title */
+  .eyebrow, .section-title {
+    font-family: var(--font-mono);
+    font-weight: 500;
+    font-size: 11px;
+    line-height: 1;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--fg3);
+  }
+  /* When eyebrow is paired with brand emphasis */
+  .eyebrow-accent {
+    color: var(--meus-orange);
+  }
+
+  /* Numbers — Clash Display, tabular. Replaces the old .brand-grad text-gradient. */
+  .number, .num-display {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+    letter-spacing: -0.012em;
+    color: var(--fg1);
+  }
+  .number-accent { color: var(--meus-orange); }
+
+  /* Mono — for captions, IDs, small ledger lines */
+  .mono {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+    letter-spacing: 0.02em;
+  }
+  .tabular { font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
+
+  /* DS rule: orange never sits in a gradient. brand-grad now flat orange.
+     Kept as a class so existing markup doesn't have to change everywhere. */
+  .brand-grad {
+    background: none;
+    -webkit-text-fill-color: currentColor;
+    color: var(--meus-orange);
+  }
+
+  /* ──────────────────────────── Surfaces ──────────────────────────── */
+  .card-meus {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+  }
+  .card-meus-2 {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+  }
+
+  /* KPI cards — flat editorial. The DS forbids decorative gradients,
+     so the old radial halo is gone. Numbers carry the visual weight. */
+  .kpi {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    box-shadow: var(--shadow-sm);
+  }
+  .kpi-primary {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    box-shadow: var(--shadow-md);
+    /* A single 1px orange line on top — the DS-sanctioned accent stripe. */
+    position: relative;
+    overflow: hidden;
+  }
+  .kpi-primary::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 1px;
+    background: var(--meus-orange);
+  }
+
+  /* ──────────────────────────── Inputs ──────────────────────────── */
+  .meus-input {
+    width: 100%;
+    padding: 10px 12px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-sm);
+    color: var(--fg1);
+    font-family: var(--font-body);
+    font-size: 14px;
+    transition: border-color var(--dur-fast) var(--ease-out),
+                box-shadow var(--dur-fast) var(--ease-out);
+  }
+  .meus-input::placeholder { color: var(--fg3); }
+  .meus-input:hover { border-color: var(--border-strong); }
+  .meus-input:focus {
+    outline: none;
+    border-color: var(--meus-orange);
+    box-shadow: var(--shadow-focus);
+  }
+
+  .meus-range {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 4px;
+    background: var(--border-default);
+    border-radius: var(--radius-full);
+    outline: none;
+  }
+  .meus-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: var(--meus-orange);
+    cursor: pointer;
+    border: 2px solid var(--bg-page);
+  }
+  .meus-range::-moz-range-thumb {
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: var(--meus-orange);
+    cursor: pointer;
+    border: 2px solid var(--bg-page);
+  }
+
+  /* ──────────────────────────── Buttons ──────────────────────────── */
+  /* DS rule: one primary CTA per view. Flat orange, no gradient, no glow. */
+  .btn-primary {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 10px 16px;
+    border-radius: var(--radius-sm);
+    font-family: var(--font-body);
+    font-weight: 500;
+    font-size: 13px;
+    letter-spacing: 0;
+    cursor: pointer;
+    background: var(--meus-orange);
+    color: #FFFFFF;
+    border: 1px solid var(--meus-orange);
+    transition: background var(--dur-fast) var(--ease-out),
+                opacity var(--dur-fast) var(--ease-out),
+                transform var(--dur-fast) var(--ease-out);
+  }
+  .btn-primary:hover { background: var(--meus-orange-hover); border-color: var(--meus-orange-hover); }
+  .btn-primary:active { background: var(--meus-orange-press); transform: scale(0.985); opacity: 0.92; }
+  .btn-primary:disabled { background: var(--bg-active); border-color: var(--border-default); color: var(--fg-muted); cursor: not-allowed; }
+
+  .btn-ghost {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 10px 16px;
+    border-radius: var(--radius-sm);
+    font-family: var(--font-body);
+    font-weight: 500; font-size: 13px;
+    cursor: pointer;
+    background: transparent;
+    border: 1px solid var(--border-default);
+    color: var(--fg1);
+    transition: background var(--dur-fast) var(--ease-out),
+                border-color var(--dur-fast) var(--ease-out),
+                color var(--dur-fast) var(--ease-out);
+  }
+  .btn-ghost:hover { background: var(--bg-hover); border-color: var(--border-strong); }
+  .btn-ghost:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* ──────────────────────────── Pills ──────────────────────────── */
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: var(--radius-full);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+  }
+  .pill-ok   { background: var(--success-soft); color: var(--success); border: 1px solid color-mix(in srgb, var(--success) 25%, transparent); }
+  .pill-warn { background: var(--warning-soft); color: var(--warning); border: 1px solid color-mix(in srgb, var(--warning) 25%, transparent); }
+  .pill-bad  { background: var(--danger-soft);  color: var(--danger);  border: 1px solid color-mix(in srgb, var(--danger)  25%, transparent); }
+  .pill-brand{ background: var(--meus-orange-soft); color: var(--meus-orange-ink); border: 1px solid color-mix(in srgb, var(--meus-orange) 30%, transparent); }
+
+  /* ──────────────────────────── Toggle / scenario / divider ───────────── */
+  .toggle-wrap {
+    position: relative;
+    display: inline-flex;
+    padding: 4px;
+    border-radius: var(--radius-full);
+    background: var(--bg-sunken);
+    border: 1px solid var(--border-subtle);
+  }
+  .toggle-btn {
+    padding: 8px 16px;
+    border-radius: var(--radius-full);
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--fg2);
+    transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+  }
+  .toggle-btn.active {
+    background: var(--meus-orange);
+    color: #FFFFFF;
+  }
+
+  .divider {
+    height: 1px;
+    background: var(--border-subtle);
+  }
+
+  .scenario {
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    background: var(--bg-surface);
+    transition: border-color var(--dur-fast) var(--ease-out),
+                background var(--dur-fast) var(--ease-out);
+  }
+  .scenario:hover { border-color: var(--border-strong); }
+  .scenario-highlight {
+    border: 1px solid var(--meus-orange);
+    background: var(--bg-surface);
+  }
+
+  .label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    line-height: 1;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--fg3);
+    font-weight: 500;
+  }
+
+  /* ──────────────────────────── Tables ──────────────────────────── */
+  .tbl { width: 100%; font-family: var(--font-body); font-size: 13px; }
+  .tbl th {
+    text-align: left;
+    color: var(--fg3);
+    font-weight: 500;
+    padding: 10px 6px;
+    border-bottom: 1px solid var(--border-default);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  .tbl td {
+    padding: 12px 6px;
+    border-bottom: 1px solid var(--border-subtle);
+    color: var(--fg1);
+  }
+  .tbl td.num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+  }
+  .tbl tr:last-child td { border-bottom: none; }
+}
+
+/* ==========================================================================
+   PRINT — keep editorial, no inverted colors needed since DS is print-friendly
+   ========================================================================== */
+@media print {
+  body { background: #FFFFFF; color: #0E0D0B; }
+  .no-print { display: none !important; }
+  .card-meus, .kpi, .kpi-primary, .scenario {
+    background: #FFFFFF !important;
+    border: 1px solid #DCDBD6 !important;
+    color: #0E0D0B !important;
+    box-shadow: none !important;
+  }
+  .brand-grad { color: #FF4D00 !important; }
+}

@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en" class="dark"><head><meta charset="utf-8"><title>Elevation · Borders not shadows</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html,body{margin:0;background:var(--mono-bg);color:var(--mono-fg);font-family:var(--mono-font-sans);padding:18px 20px;font-size:11px}
+  .row{display:flex;gap:14px}
+  .card{flex:1;background:var(--mono-surface);border:1px solid var(--mono-border);padding:12px;height:90px;display:flex;flex-direction:column;justify-content:space-between}
+  .name{font-weight:600;font-size:12px}
+  .lbl{font-family:var(--mono-font-mono);color:var(--mono-fg-muted)}
+  .pop{box-shadow:var(--mono-shadow-sm);border-radius:8px}
+  .dlg{box-shadow:var(--mono-shadow-md);border-radius:8px}
+  .cmd{box-shadow:var(--mono-shadow-lg);border-radius:8px}
+</style></head>
+<body>
+<div class="row">
+  <div class="card"><div class="name">Card · flat</div><div class="lbl">1px border · no shadow</div></div>
+  <div class="card pop"><div class="name">Popover</div><div class="lbl">shadow-sm · radius 8</div></div>
+  <div class="card dlg"><div class="name">Dialog</div><div class="lbl">shadow-md · radius 8</div></div>
+  <div class="card cmd"><div class="name">⌘ Palette</div><div class="lbl">shadow-lg · radius 8</div></div>
+</div>
+</body></html>

@@ -1,0 +1,36 @@
+/* Email shell — Reckless display + system body, paper-on-stone palette */
+@import url("../colors_and_type.css");
+@import url("../_fonts-subfolder.css");
+
+html,body{margin:0;padding:0;background:oklch(0.10 0.005 60);font-family:var(--mono-font-sans);color:var(--mono-fg)}
+.viewport{padding:48px 32px;display:flex;justify-content:center;min-height:100vh}
+.email{
+  width:560px;max-width:100%;background:oklch(0.965 0.01 80);color:#1a1a1a;
+  font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:14px;line-height:1.55;
+  letter-spacing:-0.005em;
+}
+.email a{color:#1a1a1a;text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px}
+.brand-bar{padding:24px 36px 0;display:flex;align-items:center;gap:12px}
+.brand-bar img{height:22px;filter:invert(1)}
+.brand-bar span{font-family:var(--mono-font-display);font-size:18px;font-weight:400;letter-spacing:-0.025em;color:#1a1a1a}
+.section{padding:0 36px}
+.divider{height:1px;background:#1a1a1a;opacity:.12;margin:32px 36px}
+.h1{font-family:var(--mono-font-display);font-size:36px;font-weight:400;letter-spacing:-0.025em;line-height:1.1;margin:36px 0 14px;color:#1a1a1a;text-wrap:balance}
+.h1 em{color:#5a5a5a;font-weight:300}
+.h2{font-family:var(--mono-font-display);font-size:22px;font-weight:400;letter-spacing:-0.018em;margin:0 0 8px;color:#1a1a1a}
+.kicker{font-family:var(--mono-font-mono);font-size:10.5px;letter-spacing:0.14em;text-transform:uppercase;color:#7a7a7a;margin:0 0 6px}
+.lede{font-size:15px;line-height:1.6;color:#3a3a3a;margin:0 0 20px;max-width:48ch}
+.email a.btn{display:inline-block;background:#0e0e0e;color:#f5f1e8;padding:14px 22px;font-size:13px;font-weight:500;letter-spacing:-0.005em;text-decoration:none;margin:8px 0 16px;transition:background 200ms;border-bottom:0}
+.email a.btn:hover{background:#3a3a3a}
+.bg-stone .email a.btn,.email.bg-stone a.btn{background:#f5f1e8;color:#1a1a1a}
+.foot{padding:32px 36px 36px;font-size:11px;color:#7a7a7a;font-family:var(--mono-font-mono);letter-spacing:0.06em;line-height:1.7}
+.foot a{color:#7a7a7a;text-decoration:none;border-bottom:1px solid #d8d2c2}
+.mono{font-family:var(--mono-font-mono);font-feature-settings:"tnum"}
+.bg-stone{background:#1a1a1a;color:#f5f1e8}
+.bg-stone .h1,.bg-stone .h2{color:#f5f1e8}
+.bg-stone .lede{color:#b8b4ac}
+.bg-stone .kicker{color:#8a8680}
+.bg-stone .brand-bar img{filter:none}
+.bg-stone .brand-bar span{color:#f5f1e8}
+.bg-stone .divider{background:#f5f1e8;opacity:.16}
+.bg-stone a{color:#f5f1e8}

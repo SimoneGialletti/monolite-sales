@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en" class="dark"><head><meta charset="utf-8"><title>Brand · Voice</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  html,body{margin:0;background:var(--mono-bg);color:var(--mono-fg);font-family:var(--mono-font-sans)}
+  .doc{padding:56px 64px;max-width:1080px;margin:0 auto}
+  .masthead{display:flex;align-items:baseline;gap:20px;padding-bottom:18px;margin-bottom:56px;border-bottom:1px solid var(--mono-border)}
+  .vol{font-family:var(--mono-font-mono);font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:var(--mono-fg-muted)}
+  h1{margin:0;font-family:var(--mono-font-display);font-size:48px;font-weight:300;letter-spacing:-0.032em;line-height:1}
+  h1 em{color:var(--mono-fg-muted);font-style:italic;font-weight:300}
+  .rule{flex:1;height:1px;background:var(--mono-border);margin:0 12px}
+  .meta{font-family:var(--mono-font-mono);font-size:11px;letter-spacing:0.14em;color:var(--mono-fg-muted)}
+
+  /* Lede */
+  .lede{font-family:var(--mono-font-display);font-style:italic;font-weight:300;font-size:36px;letter-spacing:-0.018em;line-height:1.18;color:var(--mono-fg);max-width:28ch;margin:0 0 72px}
+  .lede span{color:var(--mono-fg-muted)}
+
+  /* Three principles */
+  .principles{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border-top:1px solid var(--mono-border);border-bottom:1px solid var(--mono-border)}
+  .p{padding:40px 32px 36px;border-right:1px solid var(--mono-border);display:flex;flex-direction:column;gap:18px}
+  .p:last-child{border-right:0}
+  .p .num{font-family:var(--mono-font-mono);font-size:11px;letter-spacing:0.18em;color:var(--mono-fg-muted)}
+  .p h3{margin:0;font-family:var(--mono-font-display);font-size:32px;font-weight:400;letter-spacing:-0.022em;line-height:1.05}
+  .p h3 em{color:var(--mono-fg-muted);font-style:italic;font-weight:300}
+  .p p{margin:0;font-size:14.5px;line-height:1.6;color:var(--mono-fg-muted);max-width:38ch}
+
+  /* Specimen — yes / not this */
+  .specimen{margin-top:80px;display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--mono-border)}
+  .col{padding:32px 32px 36px;display:flex;flex-direction:column;gap:18px}
+  .col-y{background:transparent;border-right:1px solid var(--mono-border)}
+  .col-n{background:oklch(0.97 0.005 30)}
+  .col-tag{display:flex;align-items:baseline;gap:14px;padding-bottom:14px;border-bottom:1px solid var(--mono-border)}
+  .col-tag .k{font-family:var(--mono-font-mono);font-size:10px;letter-spacing:0.16em;text-transform:uppercase}
+  .col-y .k{color:var(--mono-fg)}
+  .col-n .k{color:#a35433}
+  .col-tag .label{font-family:var(--mono-font-display);font-style:italic;font-weight:300;font-size:18px;letter-spacing:-0.012em;color:var(--mono-fg-muted)}
+  .row{display:flex;flex-direction:column;gap:6px;padding:14px 0;border-bottom:1px solid var(--mono-border)}
+  .row:last-child{border-bottom:0;padding-bottom:0}
+  .row .ctx{font-family:var(--mono-font-mono);font-size:9.5px;letter-spacing:0.14em;text-transform:uppercase;color:var(--mono-fg-muted)}
+  .row .quote{font-family:var(--mono-font-display);font-size:20px;font-weight:400;letter-spacing:-0.014em;line-height:1.35;color:var(--mono-fg)}
+  .col-n .row .quote{color:#7a5a4a;text-decoration:line-through;text-decoration-color:#a35433;text-decoration-thickness:1px;text-underline-offset:2px}
+
+  /* Closer */
+  .closer{margin-top:64px;padding-top:24px;border-top:1px solid var(--mono-border);display:flex;justify-content:space-between;align-items:baseline}
+  .closer .left{font-family:var(--mono-font-display);font-style:italic;font-weight:300;font-size:24px;letter-spacing:-0.015em;color:var(--mono-fg-muted);max-width:36ch;line-height:1.3}
+  .closer .right{font-family:var(--mono-font-mono);font-size:10px;letter-spacing:0.14em;color:var(--mono-fg-muted);text-transform:uppercase}
+</style></head>
+<body>
+<div class="doc">
+
+  <div class="masthead">
+    <span class="vol">§ 02 · Brand</span>
+    <h1>Voice, <em>spoken quietly.</em></h1>
+    <span class="rule"></span>
+    <span class="meta">Style guide · Apr 2026</span>
+  </div>
+
+  <p class="lede">We write the way <span>a senior accountant speaks</span> to a client they respect — clearly, briefly, <span>without flourish.</span></p>
+
+  <div class="principles">
+    <div class="p">
+      <span class="num">i.</span>
+      <h3>Quiet, <em>not silent.</em></h3>
+      <p>We say only what is needed. But we say it. Empty UI is not the same as silent UI. A blank inbox earns one sentence.</p>
+    </div>
+    <div class="p">
+      <span class="num">ii.</span>
+      <h3>Specific, <em>not generic.</em></h3>
+      <p>"Seven agents ran" not "everything is fine". Names, numbers, timestamps. The product reads like a ledger because it is one.</p>
+    </div>
+    <div class="p">
+      <span class="num">iii.</span>
+      <h3>Italian, <em>then English.</em></h3>
+      <p>We write Italian first because that is where the work is. English is the translation, never the source. We do not call it "AI". We call it "agente".</p>
+    </div>
+  </div>
+
+  <div class="specimen">
+    <div class="col col-y">
+      <div class="col-tag"><span class="k">Yes</span><span class="label">— this is the register</span></div>
+      <div class="row"><span class="ctx">Empty inbox</span><span class="quote">Niente richiede la tua attenzione.</span></div>
+      <div class="row"><span class="ctx">Daily digest</span><span class="quote">Sette agenti hanno lavorato stanotte.</span></div>
+      <div class="row"><span class="ctx">Anomaly</span><span class="quote">Una fattura duplicata, intercettata alle 03:11.</span></div>
+      <div class="row"><span class="ctx">Onboarding</span><span class="quote">Il tuo workspace è pronto, Simone.</span></div>
+      <div class="row"><span class="ctx">Pricing</span><span class="quote">Per azienda, per agente, per mese.</span></div>
+    </div>
+    <div class="col col-n">
+      <div class="col-tag"><span class="k">Not this</span><span class="label">— never the register</span></div>
+      <div class="row"><span class="ctx">Empty inbox</span><span class="quote">🎉 You're all caught up! Great job!</span></div>
+      <div class="row"><span class="ctx">Daily digest</span><span class="quote">AI-powered insights to supercharge your workflow ✨</span></div>
+      <div class="row"><span class="ctx">Anomaly</span><span class="quote">⚠️ Hey! Something looks off — wanna take a look?</span></div>
+      <div class="row"><span class="ctx">Onboarding</span><span class="quote">Welcome aboard! Let's get you set up in 3 easy steps.</span></div>
+      <div class="row"><span class="ctx">Pricing</span><span class="quote">Plans for teams of every size and shape!</span></div>
+    </div>
+  </div>
+
+  <div class="closer">
+    <p class="left">If a sentence could appear on a Mailchimp template, <br>rewrite it.</p>
+    <span class="right">End of § 02</span>
+  </div>
+
+</div>
+</body></html>
