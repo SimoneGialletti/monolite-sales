@@ -109,38 +109,32 @@ export const ResultView = ({ inputs, outputs }: ResultViewProps) => {
               +{fmtEur(savings.total)}
             </p>
             <p className="mt-2 text-[12px] text-[var(--fg3)]">
-              Per ogni attività, l'agent costa il {Math.round((1 - AGENT_COST_RATIO) * 100)}% in meno
-              dell'equivalente umano — ed è più veloce e più preciso.
+              Per ogni attività, l'agent costa il {Math.round((1 - AGENT_COST_RATIO) * 100)}% del
+              costo mensile pieno (RAL + oneri) della persona che la fa oggi — ed è più veloce e
+              più preciso.
             </p>
 
             <ul className="mt-5 space-y-3 text-[13px] text-[var(--fg1)]">
               <Benefit
-                title="Prima nota e contabilità"
-                detail="L'agent fa data entry e quadrature a metà del costo, in tempo reale, senza errori di trascrizione."
-                line={savings.accounting}
+                title="Agent prima nota"
+                detail="Registrazioni, quadrature e prima nota a metà del costo persona/mese, in tempo reale, senza errori di trascrizione."
+                line={savings.primaNota}
               />
               <Benefit
-                title="ERP/gestionale legacy"
-                detail="Stesse funzioni del software che usi oggi, a metà del canone — più aggiornamenti continui."
-                line={savings.erp}
-              />
-              <Benefit
-                title="Fornitori e listini"
-                detail="L'agent aggiorna listini e tiene la relazione fornitori a metà costo, più veloce delle email."
+                title="Agent fornitori"
+                detail="Listini, ordini e follow-up scadenze a metà del costo persona/mese, più veloce delle email."
                 line={savings.suppliers}
               />
               <Benefit
-                title="Gestione commesse"
-                detail="Avanzamento, costi e marginalità tracciati a metà costo, in tempo reale, senza spreadsheet."
-                line={savings.commesse}
+                title="Agent magazzino"
+                detail="Movimenti, picking e controllo giacenze a metà del costo persona/mese, in tempo reale."
+                line={savings.warehouse}
               />
-              {inputs.includeStudio && (
-                <Benefit
-                  title="Tempo dello studio commercialista"
-                  detail="Lo studio accede al DB in clean data room: stesso lavoro a metà delle ore fatturate."
-                  line={savings.studio}
-                />
-              )}
+              <Benefit
+                title="Agent ore lavoratori"
+                detail="Email ripetitive, reportistica, scheduling, follow-up — assorbiti a metà del costo persona/mese."
+                line={savings.workerHours}
+              />
             </ul>
 
             <CostFooter
@@ -511,7 +505,7 @@ interface BenefitProps {
   title: string;
   detail: string;
   /** Voce di saving (umano vs agent). Se presente e con saving > 0, mostra
-   *  l'importo a destra e la riga "umano X → agent X/2" sotto. */
+   *  l'importo a destra e la riga "0.X persone/mese × €Y → agent €Z" sotto. */
   line?: SavingLine;
 }
 
@@ -537,7 +531,8 @@ const Benefit = ({ title, detail, line }: BenefitProps) => {
         </p>
         {showLine && (
           <p className="mt-1 font-mono tabular text-[10px] text-[var(--fg-muted)] tracking-wide">
-            umano {fmtEur(line.humanCost)} → agent {fmtEur(line.agentCost)}
+            {line.personMonths.toFixed(2)} persone/mese × {fmtEur(line.personMonthlyCost)} ={" "}
+            {fmtEur(line.humanCost)} → agent {fmtEur(line.agentCost)}
           </p>
         )}
       </div>

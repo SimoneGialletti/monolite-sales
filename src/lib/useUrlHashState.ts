@@ -32,6 +32,7 @@ const SHORT: Record<string, keyof CalcInputs> = {
   ord: "monthlyOrders",
   erp: "currentErpMonthlyCost",
   rate: "avgHourlyRate",
+  fl: "monthlyFullyLoadedCost",
   tier: "priceTier",
   third: "thirdPartyAgentShare",
   studio: "includeStudio",

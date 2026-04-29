@@ -100,6 +100,11 @@ export interface CalcInputs {
   // Costi attuali / parametri di calcolo del valore
   currentErpMonthlyCost: number;
   avgHourlyRate: number;
+  /** Costo mensile pieno (fully-loaded) di una persona in azienda — RAL +
+   *  oneri sociali + TFR + mensilità aggiuntive ammortizzate. È la base con
+   *  cui confrontiamo il costo dell'agent: per ogni FTE-equivalente assorbita
+   *  da Monolite, l'agent costa il 50% di questa cifra. */
+  monthlyFullyLoadedCost: number;
 
   // Composizione del consumo agenti
   priceTier: PriceTier;
@@ -135,6 +140,7 @@ export const defaultInputs: CalcInputs = {
 
   currentErpMonthlyCost: 950,
   avgHourlyRate: 38,
+  monthlyFullyLoadedCost: 3500,
 
   priceTier: "mid",
   thirdPartyAgentShare: 30,
@@ -416,72 +422,83 @@ export function estimateMonthlyUplift(inp: CalcInputs): number {
  *  saving e va deciso di prodotto, non a runtime. */
 export const AGENT_COST_RATIO = 0.5;
 
-/** Voce di saving — sempre espressa come differenza tra costo umano
- *  attuale e costo dell'agent equivalente. */
+/** Ore-uomo che fanno un FTE-mese (40h × 4.2 settimane). Usato per
+ *  convertire ore mensili spese su un'attività in "frazione di persona". */
+export const HOURS_PER_PERSON_MONTH = 168;
+
+/** Voce di saving — confronta il costo mensile fully-loaded delle persone
+ *  che oggi fanno l'attività con il costo dell'agent equivalente. */
 export interface SavingLine {
-  /** Quanto la PMI spende oggi per questa attività (umano o software). */
+  /** Quante "persone-mese" l'attività consuma oggi. Può essere frazionario. */
+  personMonths: number;
+  /** Costo mensile fully-loaded di una persona usato come riferimento. */
+  personMonthlyCost: number;
+  /** Costo umano = personMonths × personMonthlyCost. */
   humanCost: number;
-  /** Quanto costerà fare la stessa attività con l'agent (= 0.5 × humanCost). */
+  /** Costo dell'agent per la stessa attività (= 0.5 × humanCost). */
   agentCost: number;
   /** Risparmio mensile = humanCost − agentCost. */
   saving: number;
 }
 
 export interface CostReductionBreakdown {
-  /** Prima nota / data entry contabile. */
-  accounting: SavingLine;
-  /** ERP / gestionale legacy sostituito da Monolite. */
-  erp: SavingLine;
-  /** Gestione fornitori e listini. */
+  /** Agent prima nota — data entry, registrazioni, quadrature contabili. */
+  primaNota: SavingLine;
+  /** Agent fornitori — listini, ordini d'acquisto, follow-up scadenze. */
   suppliers: SavingLine;
-  /** Gestione commesse (project ops, scheduling, marginalità). */
-  commesse: SavingLine;
-  /** Tempo dello studio commercialista grazie alla clean data room. */
-  studio: SavingLine;
+  /** Agent magazzino — movimenti, picking, controllo giacenze. */
+  warehouse: SavingLine;
+  /** Agent ore lavoratori — attività ripetitive trasversali (email,
+   *  reportistica, scheduling, follow-up) sottratte ai dipendenti. */
+  workerHours: SavingLine;
   /** Risparmio totale mensile (somma dei .saving). */
   total: number;
 }
 
 /** Ore mensili tipiche per la gestione fornitori/listini (per fornitore). */
 export const SUPPLIER_OPS_HOURS_PER_SUPPLIER = 0.4;
-/** Ore mensili tipiche per gestione commessa attiva. */
-export const COMMESSA_OPS_HOURS_PER_PROJECT = 4;
-/** Ore mensili che lo studio dedica alla PMI, per piano. */
-const STUDIO_HOURS_BY_PLAN: Record<Plan, number> = {
-  starter: 2,
-  business: 6,
-  enterprise: 14,
-  studio: 0, // gli studi non risparmiano se stessi
-};
+/** Ore mensili tipiche per movimentazione/picking/controllo per ordine. */
+export const WAREHOUSE_OPS_HOURS_PER_ORDER = 0.1;
+/** Ore mensili per dipendente in attività ripetitive che gli agent assorbono
+ *  (email di routine, reportistica, scheduling, follow-up). */
+export const WORKER_REPETITIVE_HOURS_PER_EMPLOYEE = 8;
 
-function lineFromHumanCost(humanCost: number): SavingLine {
+function lineFromPersonMonths(personMonths: number, personMonthlyCost: number): SavingLine {
+  const humanCost = personMonths * personMonthlyCost;
   const agentCost = humanCost * AGENT_COST_RATIO;
-  return { humanCost, agentCost, saving: humanCost - agentCost };
+  return {
+    personMonths,
+    personMonthlyCost,
+    humanCost,
+    agentCost,
+    saving: humanCost - agentCost,
+  };
 }
 
 export function estimateMonthlyCostReduction(inp: CalcInputs): CostReductionBreakdown {
-  const plan = resolvePlan(inp);
+  const m = inp.monthlyFullyLoadedCost;
 
-  const accounting = lineFromHumanCost(inp.monthlyAccountingHours * inp.avgHourlyRate);
-  const erp = lineFromHumanCost(inp.currentErpMonthlyCost);
-  const suppliers = lineFromHumanCost(
-    inp.suppliersCount * SUPPLIER_OPS_HOURS_PER_SUPPLIER * inp.avgHourlyRate
+  const primaNota = lineFromPersonMonths(
+    inp.monthlyAccountingHours / HOURS_PER_PERSON_MONTH,
+    m
   );
-  const commesse = lineFromHumanCost(
-    inp.monthlyCommesse * COMMESSA_OPS_HOURS_PER_PROJECT * inp.avgHourlyRate
+  const suppliers = lineFromPersonMonths(
+    (inp.suppliersCount * SUPPLIER_OPS_HOURS_PER_SUPPLIER) / HOURS_PER_PERSON_MONTH,
+    m
   );
-  const studio = lineFromHumanCost(
-    inp.includeStudio ? (STUDIO_HOURS_BY_PLAN[plan] ?? 0) * inp.avgHourlyRate : 0
+  const warehouse = lineFromPersonMonths(
+    (inp.monthlyOrders * WAREHOUSE_OPS_HOURS_PER_ORDER) / HOURS_PER_PERSON_MONTH,
+    m
+  );
+  const workerHours = lineFromPersonMonths(
+    (inp.employees * WORKER_REPETITIVE_HOURS_PER_EMPLOYEE) / HOURS_PER_PERSON_MONTH,
+    m
   );
 
   const total =
-    accounting.saving +
-    erp.saving +
-    suppliers.saving +
-    commesse.saving +
-    studio.saving;
+    primaNota.saving + suppliers.saving + warehouse.saving + workerHours.saving;
 
-  return { accounting, erp, suppliers, commesse, studio, total };
+  return { primaNota, suppliers, warehouse, workerHours, total };
 }
 
 /**

@@ -89,6 +89,17 @@ export const SalesInputsPanel = ({ inputs, set }: SalesInputsPanelProps) => {
             />
           </Field>
 
+          <Field
+            label="Costo persona/mese (fully-loaded)"
+            helper="Costo mensile pieno per l'azienda: RAL + oneri sociali + TFR + mensilità aggiuntive. Base del paradigma agent = 50%."
+          >
+            <NumericInput
+              value={inputs.monthlyFullyLoadedCost}
+              onChange={(n) => set("monthlyFullyLoadedCost", n)}
+              suffix="€"
+            />
+          </Field>
+
           <Field label="Tier consumo agenti" helper="Mix di agenti standard vs personalizzati.">
             <SegmentedControl
               layout="block"
